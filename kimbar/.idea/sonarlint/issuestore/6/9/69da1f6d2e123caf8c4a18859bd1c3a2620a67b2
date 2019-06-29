@@ -1,0 +1,6 @@
+
+Zsquid:S00107"=Method has 18 parameters, which is greater than 7 authorized.(¸šé‚ùÿÿÿÿ
+Tsquid:S00107"=Method has 13 parameters, which is greater than 7 authorized.(ü°¹2
+]squid:UselessImportCheck"2Remove this unused import 'java.sql.SQLException'.(ÛïÆŸ8Ëş÷¹-
+Zsquid:S00107"=Method has 16 parameters, which is greater than 7 authorized.(äØãûÿÿÿÿ
+dsquid:UselessImportCheck";Remove this unused import 'by.itech.kimbar.entity.Address'.(„Øêíÿÿÿÿÿ

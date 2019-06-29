@@ -1,0 +1,5 @@
+
+Tsquid:UselessImportCheck"0Remove this unused import 'java.util.ArrayList'.(÷‰îƒ
+qsquid:S3776–"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(ğ‚öÄ8‘ŸÆú¹-
+zsquid:UselessImportCheck"JRemove this unused import 'org.codehaus.jackson.map.JsonMappingException'.(Ì‹çÚıÿÿÿÿ8ª¸Íø¹-
+tsquid:UselessImportCheck"IRemove this unused import 'org.codehaus.jackson.JsonGenerationException'.(ÉÀ—8ª¸Íø¹-
