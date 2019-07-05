@@ -2,7 +2,7 @@ package by.itech.kimbar.controller.command.impl.user;
 
 import by.itech.kimbar.controller.command.Command;
 import by.itech.kimbar.util.PhotoReader;
-import by.itech.kimbar.util.PropertyReader;
+import by.itech.kimbar.util.PathPropertyReader;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,9 +16,11 @@ public class ShowUserPhotoCommand implements Command {
     @Override
     public void execute(HttpServletRequest req, HttpServletResponse resp) {
         String usrId = req.getParameter("userId");
+        String extension = req.getParameter("extension");
+
         if (usrId != null) {
             try {
-                PhotoReader.read(PropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + ".jpg", resp);
+                PhotoReader.read(PathPropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + "." +  extension, resp);
             } catch (IOException e) {
                 try {
                     PhotoReader.read("placeholder.jpg", resp);

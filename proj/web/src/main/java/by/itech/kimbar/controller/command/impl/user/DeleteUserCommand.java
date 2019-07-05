@@ -9,13 +9,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class DeleteUserCommand implements Command {
     private static final Logger log = Logger.getLogger(DeleteUserCommand.class);
 
 
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
         String data = req.getParameter("id");
 
@@ -28,9 +29,11 @@ public class DeleteUserCommand implements Command {
             userId[i] = Integer.valueOf(splitId[i]);
         }
         try {
-            sp.getUserService().deleteUser(userId);
+            log.debug("Parameters : " + Arrays.toString(userId));
+            log.debug( sp.getUserService().deleteUser(userId));
         } catch (ServiceException  e) {
            log.error(e);
+            throw new ServiceException();
         }
 
 

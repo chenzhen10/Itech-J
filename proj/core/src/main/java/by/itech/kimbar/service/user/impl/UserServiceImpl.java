@@ -6,6 +6,7 @@ import by.itech.kimbar.dao.impl.connection.ConnectionCloser;
 import by.itech.kimbar.dao.impl.connection.ConnectionPool;
 import by.itech.kimbar.dao.user.UserDao;
 import by.itech.kimbar.entity.Gender;
+import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.entity.User;
 import by.itech.kimbar.service.user.UserService;
 import by.itech.kimbar.service.exception.ServiceException;
@@ -39,10 +40,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean updateUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
-                              String maritalStatus, String webSite, String email, String workplace,
+                              MaritalStatus maritalStatus, String webSite, String email, String workplace,
                               String country, String city, String street, String house, String numOfFlat, Integer index, String photoPath, Integer idClient) throws ServiceException {
-        if (ValidationImpl.validateUpdateUserFields(name, surname, lastName, date, gender, citizenship, maritalStatus,
-                webSite, email, workplace, country, city, street, house, numOfFlat, index, photoPath, idClient)) {
+        if (ValidationImpl.validateUpdateUserFields(name, surname, lastName, citizenship,
+                webSite, email, workplace, country, city, street, house, numOfFlat, idClient)) {
 
             UserDao usrDao = provider.getUserDao();
             boolean result = false;
@@ -129,11 +130,11 @@ public class UserServiceImpl implements UserService {
     // implement validation if user want to input incorrect data
     @Override
     public boolean createUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
-                              String maritalStatus, String webSite, String email, String workplace,
+                              MaritalStatus maritalStatus, String webSite, String email, String workplace,
                               String country, String city, String street, String house, String numOfFlat, Integer index) throws ServiceException {
 
-        if (ValidationImpl.validateCreateUserFields(name, surname, lastName, date, gender, citizenship, maritalStatus,
-                webSite, email, workplace, country, city, street, house, numOfFlat, index)) {
+        if (ValidationImpl.validateCreateUserFields(name, surname, lastName, citizenship,
+                webSite, email, workplace, country, city, street, house, numOfFlat)) {
 
             boolean result = false;
             UserDao usrDao = provider.getUserDao();
@@ -156,17 +157,17 @@ public class UserServiceImpl implements UserService {
                 ConnectionCloser.close(c, null, null);
             }
             return result;
-        }else{
+       }else {
             throw new ServiceException("Inputted data are incorrect");
-        }
+       }
     }
     @Override
     public String findUserByParameter(String name, String surname, String lastName, Gender gender, Date date,
-                                      String maritalStatus, String citizenship, String country, String city, String street,
-                                      String house, String numOfHouse, Integer index) throws ServiceException {
+                                      MaritalStatus maritalStatus, String citizenship, String country, String city, String street,
+                                      String house, String numOfHouse, Integer index,Integer start, Integer total) throws ServiceException {
 
-        if (ValidationImpl.validateSearchFields(name, surname, lastName, gender, date, maritalStatus,
-                citizenship, country, city, street, house, numOfHouse, index)) {
+        if (ValidationImpl.validateSearchFields(name, surname, lastName,
+                citizenship, country, city, street, house, numOfHouse)) {
 
             UserDao ud = provider.getUserDao();
             List<User> users = null;
@@ -174,6 +175,7 @@ public class UserServiceImpl implements UserService {
             String result = null;
             try {
                 String query = "SELECT * FROM client WHERE 1 = 1 ";
+                String countOfUsers = "SELECT COUNT(*) FROM client WHERE 1 = 1 ";
 
                 if (name != null && name.length() > 0) {
                     query += " AND name LIKE " + "'%" + name + "%'";
@@ -187,10 +189,10 @@ public class UserServiceImpl implements UserService {
                     query += " AND last_name LIKE " + "'%" + lastName + "%'";
                 }
                 if (gender != null) {
-                    query += " AND gender LIKE " + "'%" + gender + "%'";
+                    query += " AND gender = "  + "'" + gender + "'" ;
                 }
-                if (maritalStatus != null && maritalStatus.length() > 0) {
-                    query += " AND marital_status LIKE " + "'%" + maritalStatus + "%'";
+                if (maritalStatus != null ) {
+                    query += " AND marital_status = " + "'" + maritalStatus + "'";
                 }
                 if (date != null) {
                     query += " AND date = '" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "'";
@@ -216,8 +218,76 @@ public class UserServiceImpl implements UserService {
                 if (index != null) {
                     query += " AND client.index LIKE " + "'%" + index + "%'";
                 }
-                users = ud.findUser(query);
+                users = ud.findUser(query + "ORDER BY surname LIMIT " +  start + "," + total );
                 result = om.writeValueAsString(users);
+            } catch (DaoException | IOException e) {
+                throw new ServiceException(e);
+            }
+            return result;
+        } else{
+            throw new ServiceException("Inputted data are incorrect");
+        }
+    }
+
+
+    @Override
+    public String countUserByParameter(String name, String surname, String lastName, Gender gender, Date date,
+                                       MaritalStatus maritalStatus, String citizenship, String country, String city, String street,
+                                       String house, String numOfHouse, Integer index) throws ServiceException {
+
+        if (ValidationImpl.validateSearchFields(name, surname, lastName,
+                citizenship, country, city, street, house, numOfHouse)) {
+
+            UserDao ud = provider.getUserDao();
+            ObjectMapper om = new ObjectMapper();
+            String result = null;
+            try {
+
+                String countOfUsers = "SELECT COUNT(*) FROM client WHERE 1 = 1 ";
+
+                if (name != null && name.length() > 0) {
+                    countOfUsers += " AND name LIKE " + "'%" + name + "%'";
+                }
+
+                if (surname != null && surname.length() > 0) {
+                    countOfUsers += " AND surname LIKE " + "'%" + surname + "%'";
+                }
+
+                if (lastName != null && lastName.length() > 0) {
+                    countOfUsers += " AND last_name LIKE " + "'%" + lastName + "%'";
+                }
+                if (gender != null) {
+                    countOfUsers += " AND gender = "  + "'" + gender + "'" ;
+                }
+                if (maritalStatus != null ) {
+                    countOfUsers += " AND marital_status = " + "'" + maritalStatus + "'";
+                }
+                if (date != null) {
+                    countOfUsers += " AND date = '" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "'";
+                }
+                if (citizenship != null && citizenship.length() > 0) {
+                    countOfUsers += " AND citizenship LIKE " + "'%" + citizenship + "%'";
+                }
+                if (country != null && country.length() > 0) {
+                    countOfUsers += " AND country LIKE " + "'%" + country + "%'";
+                }
+                if (city != null && city.length() > 0) {
+                    countOfUsers += " AND city LIKE " + "'%" + city + "%'";
+                }
+                if (street != null && street.length() > 0) {
+                    countOfUsers += " AND street LIKE " + "'%" + street + "%'";
+                }
+                if (house != null && house.length() > 0) {
+                    countOfUsers += " AND house LIKE " + "'%" + house + "%'";
+                }
+                if (numOfHouse != null && numOfHouse.length() > 0) {
+                    countOfUsers += " AND num_of_house LIKE " + "'%" + numOfHouse + "%'";
+                }
+                if (index != null) {
+                    countOfUsers += " AND client.index LIKE " + "'%" + index + "%'";
+                }
+                int res = ud.countOfFoundUsers(countOfUsers);
+                result = om.writeValueAsString(res);
             } catch (DaoException | IOException e) {
                 throw new ServiceException(e);
             }

@@ -6,9 +6,12 @@ import by.itech.kimbar.dao.impl.connection.ConnectionPool;
 import by.itech.kimbar.dao.user.UserDao;
 import by.itech.kimbar.entity.Address;
 import by.itech.kimbar.entity.Gender;
+import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.entity.User;
-import by.itech.kimbar.util.PropertyReader;
+import by.itech.kimbar.util.EnumChecker;
+import by.itech.kimbar.util.PathPropertyReader;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 
 public class UserDaoImpl implements UserDao {
+    private static final Logger log = Logger.getLogger(UserDaoImpl.class);
+
     private static final int NUMBER_OF_VALID_OPERATION = 1;
 
     private static final String GET_ALL_USERS = "SELECT * FROM client";
@@ -27,7 +32,7 @@ public class UserDaoImpl implements UserDao {
             "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     //pagination
-    private static final String PAGINATION_USER = "SELECT * FROM client  LIMIT  ? , ?";
+    private static final String PAGINATION_USER = "SELECT * FROM client ORDER BY surname LIMIT  ? , ? ";
     private static final String USER_COUNT = "SELECT COUNT(*) FROM client";
 
     private static final String DELETE_USER = "DELETE FROM client WHERE idclient in(?)";
@@ -42,22 +47,16 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Integer countOfUser() throws DaoException {
-        Connection c = ConnectionPool.getInstance().getConnection();
-        Statement st = null;
-        int count = 0;
-        ResultSet rs = null;
-        try {
-            st = c.createStatement();
-            rs = st.executeQuery(USER_COUNT);
-            rs.next();
-            count = rs.getInt(1);
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        } finally {
-            ConnectionCloser.close(c, rs, st);
-        }
-        return count;
+        return getCount(USER_COUNT);
     }
+
+    @Override
+    public Integer countOfFoundUsers(String query) throws DaoException {
+        return getCount(query);
+    }
+
+
+
 
     @Override
     public List<User> userPagination(Integer start, Integer total) throws DaoException {
@@ -127,9 +126,10 @@ public class UserDaoImpl implements UserDao {
     }
 
 
+
     @Override
     public boolean createUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
-                              String maritalStatus, String webSite, String email, String workplace,
+                              MaritalStatus maritalStatus, String webSite, String email, String workplace,
                               String country, String city, String street, String house, String numOfFlat,
                               Integer index) throws DaoException {
         Connection c = ConnectionPool.getInstance().getConnection();
@@ -141,9 +141,9 @@ public class UserDaoImpl implements UserDao {
             st.setString(2, surname);
             st.setString(3, lastName);
             st.setObject(4, date);
-            st.setString(5, String.valueOf(gender));
+            st.setString(5, EnumChecker.checkIfEnumExist(maritalStatus,gender).get(1));
             st.setString(6, citizenship);
-            st.setString(7, maritalStatus);
+            st.setString(7, EnumChecker.checkIfEnumExist(maritalStatus,gender).get(0));
             st.setString(8, webSite);
             st.setString(9, email);
             st.setString(10, workplace);
@@ -175,13 +175,13 @@ public class UserDaoImpl implements UserDao {
             for (int i = 1; i <= id.length; i++) {
                 ps.setInt(1, id[iterator]);
                 ps.addBatch();
-                FileUtils.deleteDirectory(new File(PropertyReader.readFilePath() + File.separator + id[iterator]));
+                FileUtils.deleteDirectory(new File(PathPropertyReader.readFilePath() + File.separator + id[iterator]));
                 iterator++;
             }
 
             res = ps.executeBatch();
 
-            //check if all users delete 0 false 1 true
+            //convert if all users delete 0 false 1 true
             for (int i : res) {
                 if (i == 0) {
                     containsZero++;
@@ -198,21 +198,23 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean updateUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
-                              String maritalStatus, String webSite, String email, String workplace,
+                              MaritalStatus maritalStatus, String webSite, String email, String workplace,
                               String country, String city, String street, String house, String numOfFlat,
                               Integer index, String photoPath, Integer idClient) throws DaoException {
         Connection c = ConnectionPool.getInstance().getConnection();
         PreparedStatement ps = null;
         int res = 0;
         try {
+
+
             ps = c.prepareStatement(UPDATE_USER);
             ps.setString(1, name);
             ps.setString(2, surname);
             ps.setString(3, lastName);
             ps.setObject(4, date);
-            ps.setString(5, String.valueOf(gender));
+            ps.setString(5, EnumChecker.checkIfEnumExist(maritalStatus,gender).get(1));
             ps.setString(6, citizenship);
-            ps.setString(7, maritalStatus);
+            ps.setString(7, EnumChecker.checkIfEnumExist(maritalStatus,gender).get(0));
             ps.setString(8, webSite);
             ps.setString(9, email);
             ps.setString(10, workplace);
@@ -268,7 +270,11 @@ public class UserDaoImpl implements UserDao {
             user.setGender(Gender.valueOf(gender));
         }
         user.setCitizenship(rs.getString("citizenship"));
-        user.setMaritalStatus(rs.getString("marital_status"));
+
+        String mStatus = rs.getString("marital_status");
+        if (mStatus != null) {
+            user.setMaritalStatus(MaritalStatus.valueOf(mStatus));
+        }
         user.setEmail(rs.getString("email"));
         user.setWebSite(rs.getString("web_site"));
         user.setWorkplace(rs.getString("workplace"));
@@ -276,7 +282,26 @@ public class UserDaoImpl implements UserDao {
                 rs.getString("city"), rs.getString("street"), rs.getString("house"),
                 rs.getString("num_of_house"), (Integer) rs.getObject(("index"))));
         user.setPhotoPath(rs.getString("photo_path"));
+
         return user;
+    }
+
+    private Integer getCount(String query) throws DaoException {
+        Connection c = ConnectionPool.getInstance().getConnection();
+        Statement st = null;
+        int count = 0;
+        ResultSet rs = null;
+        try {
+            st = c.createStatement();
+            rs = st.executeQuery(query);
+            rs.next();
+            count = rs.getInt(1);
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        } finally {
+            ConnectionCloser.close(c, rs, st);
+        }
+        return count;
     }
 
 }

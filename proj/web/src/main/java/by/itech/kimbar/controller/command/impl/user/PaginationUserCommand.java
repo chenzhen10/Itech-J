@@ -14,7 +14,7 @@ import java.io.IOException;
 public class PaginationUserCommand implements Command {
     private static final Logger log = Logger.getLogger(PaginationUserCommand.class);
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         UserService us = ServiceProvider.getInstance().getUserService();
 
         String startValue = req.getParameter("page");
@@ -25,6 +25,7 @@ public class PaginationUserCommand implements Command {
             resp.getWriter().write(us.getPaginationUsers(NumericChecker.check(startValue),NumericChecker.check(total)));
         } catch (ServiceException e) {
            log.error(e);
+           throw new ServiceException();
         }
 
     }

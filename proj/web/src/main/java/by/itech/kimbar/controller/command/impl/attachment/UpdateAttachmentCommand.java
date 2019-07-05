@@ -16,15 +16,17 @@ import java.util.List;
 public class UpdateAttachmentCommand implements Command {
     private static final Logger log = Logger.getLogger(AddAttachmentCommand.class);
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         AttachmentService as = ServiceProvider.getInstance().getAttachmentService();
 
         List<Dto> attachments = DtoProvider.getInstance().getAttachmentDto().deSerialize(req);
 
         try {
-            as.updateAttachment(attachments);
+            log.debug("Parameters : " + attachments);
+            log.debug( as.updateAttachment(attachments));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 }

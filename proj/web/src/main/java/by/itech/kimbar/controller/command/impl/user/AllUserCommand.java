@@ -14,6 +14,7 @@ public class AllUserCommand implements Command {
     @Override
     public void execute(HttpServletRequest req, HttpServletResponse resp) {
         ServiceProvider sp = ServiceProvider.getInstance();
+
         try {
             resp.getWriter().write(sp.getUserService().getAllInJson());
         } catch (IOException | ServiceException e) {

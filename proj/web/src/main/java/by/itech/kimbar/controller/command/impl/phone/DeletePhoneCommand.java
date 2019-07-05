@@ -14,7 +14,7 @@ public class DeletePhoneCommand implements Command {
     private static final Logger log = Logger.getLogger(DeletePhoneCommand.class);
 
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         PhoneService ps = ServiceProvider.getInstance().getPhoneService();
 
         String data = req.getParameter("id");
@@ -29,6 +29,7 @@ public class DeletePhoneCommand implements Command {
             ps.deletePhone(id);
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 }

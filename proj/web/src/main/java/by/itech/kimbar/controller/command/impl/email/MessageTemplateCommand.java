@@ -2,6 +2,8 @@ package by.itech.kimbar.controller.command.impl.email;
 
 import by.itech.kimbar.controller.command.Command;
 import by.itech.kimbar.entity.Template;
+import by.itech.kimbar.util.TemplateReader;
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,20 +13,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageTemplateCommand implements Command {
+    private static final Logger log = Logger.getLogger(MessageTemplateCommand.class);
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        Template congratulateTempl = new Template(1,"Dear name i want to congratulate you with graduation");
-        Template helpTempl = new Template(2,"Hey name when you will be free please call me");
-        Template surpriseTempl = new Template(3,"name i want to congratulate you with graduation");
-
-        List<Template> templates = new ArrayList<>();
-        templates.add(congratulateTempl);
-        templates.add(helpTempl);
-        templates.add(surpriseTempl);
-
+    public void execute(HttpServletRequest req, HttpServletResponse resp)  {
         ObjectMapper om = new ObjectMapper();
 
-        resp.getWriter().write(om.writeValueAsString(templates));
+        List<Template> templates = null;
+        try {
+            templates = readTemplate();
+            resp.getWriter().write(om.writeValueAsString(templates));
+        } catch (IOException e) {
+            log.error(e);
+        }
+    }
+
+
+    private List<Template> readTemplate() throws IOException {
+        List<Template> result = new ArrayList<>();
+
+        result.add(new Template(0,TemplateReader.defaultTemplate()) );
+        result.add(new Template(1,TemplateReader.helpTemplate()) );
+        result.add(new Template(2,TemplateReader.birthdayTemplate()));
+        result.add(new Template(3,TemplateReader.graduationTemplate()));
+        return result;
     }
 }

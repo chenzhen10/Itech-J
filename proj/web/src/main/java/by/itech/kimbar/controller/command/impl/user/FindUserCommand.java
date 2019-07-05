@@ -2,10 +2,11 @@ package by.itech.kimbar.controller.command.impl.user;
 
 import by.itech.kimbar.controller.command.Command;
 import by.itech.kimbar.entity.Gender;
+import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.service.ServiceProvider;
 import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.service.user.UserService;
-import by.itech.kimbar.util.DateChecker;
+import by.itech.kimbar.util.DateConverter;
 import by.itech.kimbar.util.NumericChecker;
 import org.apache.log4j.Logger;
 
@@ -19,7 +20,7 @@ public class FindUserCommand implements Command {
     private static final Logger log = Logger.getLogger(FindUserCommand.class);
 
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         UserService us = ServiceProvider.getInstance().getUserService();
         String name = req.getParameter("name");
         String surname = req.getParameter("surname");
@@ -34,18 +35,29 @@ public class FindUserCommand implements Command {
         String house = req.getParameter("house");
         String numOfFlat = req.getParameter("numOfFlat");
         String index = req.getParameter("index");
+        String start = req.getParameter("start");
+        String total = req.getParameter("total");
 
         Gender gdr = null;
-        if (gender.equals("Male") || gender.equals("Female") ) {
+        if (gender.equals("Male") || gender.equals("Female")) {
             gdr = Gender.valueOf(gender);
         }
 
+        MaritalStatus mS = null;
+        if (maritalStatus.equals("Single") || maritalStatus.equals("Married")) {
+            mS = MaritalStatus.valueOf(maritalStatus);
+        }
 
         try {
-            resp.getWriter().write(us.findUserByParameter(name, surname, lastName, gdr, DateChecker.check(date),
-                    maritalStatus, citizenship, country, city, street, house, numOfFlat, NumericChecker.check(index)));
+            log.debug("Parameters : " + name + surname + lastName + gdr + DateConverter.convert(date) +
+                    mS + citizenship + country + city + street + house + numOfFlat + NumericChecker.check(index) +
+                    NumericChecker.check(start) + NumericChecker.check(total));
+            resp.getWriter().write(us.findUserByParameter(name, surname, lastName, gdr, DateConverter.convert(date),
+                    mS, citizenship, country, city, street, house, numOfFlat, NumericChecker.check(index),
+                    NumericChecker.check(start), NumericChecker.check(total)));
         } catch (ServiceException | ParseException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 }

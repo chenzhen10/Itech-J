@@ -9,12 +9,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class DeleteAttachmentCommand implements Command {
     private static final Logger log = Logger.getLogger(DeleteAttachmentCommand.class);
 
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
 
         String id = req.getParameter("id");
@@ -40,10 +41,11 @@ public class DeleteAttachmentCommand implements Command {
             attachmentId[i] = Integer.valueOf(splitId[i]);
         }
         try {
-            sp.getAttachmentService().deleteAttachment(attachmentId, splitName, paths);
-            //redirect to refreshAllTables data
+            log.debug("Parameters : " + Arrays.toString(attachmentId) + Arrays.toString(splitName) + Arrays.toString(paths));
+            log.debug( sp.getAttachmentService().deleteAttachment(attachmentId, splitName, paths));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 }

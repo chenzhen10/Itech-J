@@ -6,7 +6,7 @@ import by.itech.kimbar.service.attachment.AttachmentService;
 import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.util.DirectoryCreator;
 import by.itech.kimbar.util.NumericChecker;
-import by.itech.kimbar.util.PropertyReader;
+import by.itech.kimbar.util.PathPropertyReader;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -27,12 +27,13 @@ public class AddAttachmentCommand implements Command {
             DirectoryCreator.createFileDirectory();
         } catch (IOException e) {
             log.error(e);
+
         }
     }
 
 
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
         AttachmentService as = sp.getAttachmentService();
 
@@ -45,20 +46,23 @@ public class AddAttachmentCommand implements Command {
 
             if (fileList.size() == 4) {
                 userId = NumericChecker.check(fileList.get(0));
-                comment = new String (fileList.get(1).getBytes ("iso-8859-1"), "UTF-8");
-                name = new String (fileList.get(2).getBytes ("iso-8859-1"), "UTF-8");
+                comment = fileList.get(1);
+                name = fileList.get(2);
                 path = fileList.get(3);
-            }else {
+            } else {
                 userId = NumericChecker.check(fileList.get(0));
-                name = new String (fileList.get(1).getBytes ("iso-8859-1"), "UTF-8");
+                name = fileList.get(1);
                 path = fileList.get(2);
             }
 
-            as.attachFile(name, comment, userId, path);
+            log.debug("Parameters : " + name + comment +  userId + path );
+            log.debug( as.attachFile(name, comment, userId, path));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         } catch (Exception e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 
@@ -80,10 +84,10 @@ public class AddAttachmentCommand implements Command {
             int maxLength = multi.size() - 1;
             //with commentary / without
             if (maxLength == 3) {
-                list.add(multi.get(3).getString());
-                list.add(multi.get(2).getString());
+                list.add(multi.get(3).getString("UTF-8"));
+                list.add(multi.get(2).getString("UTF-8"));
             } else {
-                list.add(multi.get(2).getString());
+                list.add(multi.get(2).getString("UTF-8"));
             }
 
             for (FileItem item : multi) {
@@ -92,19 +96,18 @@ public class AddAttachmentCommand implements Command {
                     fileName = item.getName();
                     fileExtension = fileName.split("\\.");
 
-                    list.add(name.append(multi.get(1).getString()).append(".").append(fileExtension[fileExtension.length - 1]).toString());
+                    list.add(name.append(multi.get(1).getString("UTF-8")).append(".").append(fileExtension[fileExtension.length - 1]).toString());
                     ext = "." + fileExtension[fileExtension.length - 1];
 
                     if (!list.get(1).equals("")) {
                         DirectoryCreator.createFileSubFolderForUser(multi.get(maxLength).getString());
-                        path = PropertyReader.readFilePath() + File.separator + multi.get(maxLength).getString()
+                        path = PathPropertyReader.readFilePath() + File.separator + multi.get(maxLength).getString()
                                 + File.separator + countOfAttachments + ext;
                         list.add(path);
                         item.write(new File(path));
                     }
                 }
             }
-
         }
         return list;
     }

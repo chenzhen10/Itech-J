@@ -14,8 +14,9 @@ import java.io.IOException;
 
 public class AddPhoneCommand implements Command {
     private static final Logger log = Logger.getLogger(AddPhoneCommand.class);
+
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
         PhoneService ps = sp.getPhoneService();
 
@@ -30,9 +31,14 @@ public class AddPhoneCommand implements Command {
         int realId = Integer.parseInt(idclient);
 
         try {
-            ps.createPhone(NumericChecker.check(countryCode),NumericChecker.check(operatorCode),NumericChecker.check(number),Phone.Type.valueOf(type),commentary,realId);
+            log.debug("Parameters : " + NumericChecker.check(countryCode) + NumericChecker.check(operatorCode)
+                    + NumericChecker.check(number) + Phone.Type.valueOf(type) + commentary + realId);
+
+            log.debug(ps.createPhone(NumericChecker.check(countryCode), NumericChecker.check(operatorCode)
+                    , NumericChecker.check(number), Phone.Type.valueOf(type), commentary, realId));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
 
     }

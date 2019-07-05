@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AllUserPhoneCommand implements Command {
-    private static final Logger log = Logger.getLogger(AllPhoneCommand.class);
+    private static final Logger log = Logger.getLogger(AllUserPhoneCommand.class);
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
         PhoneService ps = sp.getPhoneService();
         String id = req.getParameter("id");
@@ -22,6 +22,7 @@ public class AllUserPhoneCommand implements Command {
             resp.getWriter().write(ps.getAllInJsonByUserId(NumericChecker.check(id)));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 

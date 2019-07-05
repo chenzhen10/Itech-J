@@ -1,10 +1,8 @@
 package by.itech.kimbar.service.validation.impl;
 
 import by.itech.kimbar.dto.Dto;
-import by.itech.kimbar.entity.Gender;
 import by.itech.kimbar.service.validation.Validation;
 
-import java.util.Date;
 import java.util.List;
 
 public class ValidationImpl implements Validation {
@@ -13,7 +11,11 @@ public class ValidationImpl implements Validation {
 
     //attachment
     public static boolean validateAttachFile(String name, String comment, Integer id, String path) {
-        return name != null &&  name.length() < 44  && id != null && path != null;
+        boolean commentValidation = true;
+        if (comment != null  && comment.length() > 254){
+            commentValidation = false;
+        }
+        return name != null &&  name.length() < 44  && id != null && path != null && commentValidation;
     }
 
     public static boolean validateDeleteAttachments(Integer[] id, String[] fileNames, String[] paths) {
@@ -45,42 +47,84 @@ public class ValidationImpl implements Validation {
     }
 
     //user
-    public static boolean validateUpdateUserFields(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
-                                             String maritalStatus, String webSite, String email, String workplace,
+    public static boolean validateUpdateUserFields(String name, String surname, String lastName, String citizenship,
+                                             String webSite, String email, String workplace,
                                              String country, String city, String street, String house,
-                                             String numOfFlat, Integer index, String photoPath, Integer idClient) {
+                                             String numOfFlat, Integer idClient) {
 
-        return name != null && name.length() < 84 && surname != null && surname.length() < 84 && idClient != null;
+        return name != null && name.length() < 25 && surname != null && surname.length() < 34 && idClient != null
+                && checkUserField(lastName, citizenship, webSite, email, workplace,
+                country, city, street, house, numOfFlat);
     }
-    //&& lastName.length() < 44
-    //                && citizenship.length() < 64 && maritalStatus.length() < 45 && webSite.length() < 74
-    //                && email.length() < 45 && workplace.length() < 75 && country.length() < 44 && city.length() < 44
-    //                && street.length() < 44 && house.length() < 44 && numOfFlat.length() < 44 && photoPath.length() < 254
 
-    public static boolean validateCreateUserFields(String name, String surname, String lastName, Date date, Gender gender,
-                                                   String citizenship,String maritalStatus, String webSite, String email,
+
+    public static boolean validateCreateUserFields(String name, String surname, String lastName,
+                                                   String citizenship,String webSite, String email,
                                                    String workplace,String country, String city, String street, String house,
-                                                   String numOfFlat, Integer index) {
+                                                   String numOfFlat) {
 
-        return  name != null && name.length() < 84 && surname != null && surname.length() < 84 ;
+        return  name != null && name.length() < 10 && surname != null && surname.length() < 34
+                && checkUserField(lastName, citizenship, webSite, email, workplace,
+                country, city, street, house, numOfFlat) ;
     }
-    //name.length() < 84 && surname.length() < 84 && lastName.length() < 44
-    //                && citizenship.length() < 64 && maritalStatus.length() < 45 && webSite.length() < 74
-    //                && email.length() < 45 && workplace.length() < 75 && country.length() < 44 && city.length() < 44
-    //                && street.length() < 44 && house.length() < 44 && numOfFlat.length() < 44
 
     public static boolean validatePagination(Integer startValue,Integer total){
         return startValue != null && total != null;
     }
 
-    public static boolean validateSearchFields(String name, String surname, String lastName, Gender gender, Date date,
-                                               String maritalStatus,String citizenship,
+    public static boolean validateSearchFields(String name, String surname, String lastName,String citizenship,
                                                String country, String city, String street, String house,
-                                               String numOfFlat, Integer index){
-       return name != null && name.length() < 84 && surname != null && surname.length() < 84;
-    }
-    // name.length() < 84 && surname.length() < 84 && lastName.length() < 44
-    //              && citizenship.length() < 64 && maritalStatus.length() < 45 && country.length() < 44 && city.length() < 44
-    //              && street.length() < 44 && house.length() < 44 && numOfFlat.length() < 44
+                                               String numOfFlat){
 
+        boolean result = true;
+
+        if (lastName != null && lastName.length() > 14){
+            result = false;
+        }else if(citizenship != null && citizenship.length() > 64){
+            result = false;
+        }else if(country != null && country.length() > 44){
+            result = false;
+        }else if(city != null && city.length() > 44 ){
+            result = false;
+        }else if(street != null && street.length() > 44 ){
+            result = false;
+        }else if( house != null && house.length() > 44){
+            result = false;
+        }else if(numOfFlat != null && numOfFlat.length() > 44 ){
+            result = false;
+        }
+
+
+
+       return name != null && name.length() < 25 && surname != null && surname.length() < 34 && result;
+    }
+
+    private static boolean checkUserField(String lastName,
+                                   String citizenship,String webSite, String email,
+                                   String workplace,String country, String city, String street, String house,
+                                   String numOfFlat){
+        boolean result = true;
+        if (lastName != null && lastName.length() > 14){
+            result = false;
+        }else if(citizenship != null && citizenship.length() > 64){
+            result = false;
+        }else if(webSite != null && webSite.length() > 74){
+            result = false;
+        }else if( email != null && email.length() > 45){
+            result = false;
+        }else if(workplace != null && workplace.length() > 74){
+            result = false;
+        }else if(country != null && country.length() > 44){
+            result = false;
+        }else if(city != null && city.length() > 44 ){
+            result = false;
+        }else if(street != null && street.length() > 44 ){
+            result = false;
+        }else if( house != null && house.length() > 44){
+            result = false;
+        }else if(numOfFlat != null && numOfFlat.length() > 44 ){
+            result = false;
+        }
+        return  result;
+    }
 }

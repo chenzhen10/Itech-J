@@ -14,7 +14,7 @@ import java.io.IOException;
 public class AllUserAttachmentCommand implements Command {
     private static final Logger log = Logger.getLogger(AllUserAttachmentCommand.class);
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
         AttachmentService ps = sp.getAttachmentService();
         String id = req.getParameter("id");
@@ -23,6 +23,7 @@ public class AllUserAttachmentCommand implements Command {
             resp.getWriter().write(ps.getAllInJsonByUserId(NumericChecker.check(id)));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 

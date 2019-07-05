@@ -17,15 +17,17 @@ import java.util.List;
 public class UpdatePhoneCommand  implements Command  {
     private static final Logger log = Logger.getLogger(UpdatePhoneCommand.class);
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         PhoneService ps = ServiceProvider.getInstance().getPhoneService();
 
         List<Dto> phones = DtoProvider.getInstance().getPhoneDto().deSerialize(req);
 
         try {
-            ps.updatePhone(phones);
+            log.debug("Parameters : " + phones);
+            log.debug( ps.updatePhone(phones));
         } catch (ServiceException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 

@@ -112,7 +112,7 @@ public class PhoneDaoImpl implements PhoneDao {
 
             res = ps.executeBatch();
 
-            // check if all statements execute correctly
+            // convert if all statements execute correctly
             for (int i : res) {
                 if (i == 0) {
                     containsZero++;

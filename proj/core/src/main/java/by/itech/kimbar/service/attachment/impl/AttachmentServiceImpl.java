@@ -133,8 +133,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         } catch (DaoException e) {
             throw new ServiceException(e);
         }
-        //if there is no attachments it will start from 0
-        return ++result ;
+        return result ;
     }
 
     @Override

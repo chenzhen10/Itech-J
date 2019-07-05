@@ -1,9 +1,9 @@
 package by.itech.kimbar.controller.command.impl.attachment;
 
 import by.itech.kimbar.controller.command.Command;
-import by.itech.kimbar.util.PropertyReader;
-import org.apache.log4j.Logger;
+import by.itech.kimbar.util.PathPropertyReader;
 
+import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -19,7 +19,7 @@ public class DownloadAttachmentCommand implements Command  {
         String downloadLink = req.getParameter("downloadLink");
 
 
-        File file = new File(PropertyReader.readFilePath() + File.separator + userId + File.separator  + downloadLink);
+        File file = new File(PathPropertyReader.readFilePath() + File.separator + userId + File.separator  + downloadLink);
         FileInputStream in = new FileInputStream(file);
 
         OutputStream out = resp.getOutputStream();
@@ -28,7 +28,7 @@ public class DownloadAttachmentCommand implements Command  {
         resp.setContentLength((int) file.length());
 
         String hKey = "Content-Disposition";
-        String hValue = String.format("attachment; filename=\"%s\"",fileName);
+        String hValue = String.format("attachment; filename=\"%s\"", MimeUtility.encodeWord(fileName,"UTF-8","Q") );
         resp.setHeader(hKey,hValue);
 
         byte[] buffer = new byte[4096];

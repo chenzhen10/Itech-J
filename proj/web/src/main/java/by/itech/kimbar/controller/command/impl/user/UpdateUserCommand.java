@@ -2,13 +2,14 @@ package by.itech.kimbar.controller.command.impl.user;
 
 import by.itech.kimbar.controller.command.Command;
 import by.itech.kimbar.entity.Gender;
+import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.service.ServiceProvider;
 import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.service.user.UserService;
-import by.itech.kimbar.util.DateChecker;
+import by.itech.kimbar.util.DateConverter;
 import by.itech.kimbar.util.DirectoryCreator;
 import by.itech.kimbar.util.NumericChecker;
-import by.itech.kimbar.util.PropertyReader;
+import by.itech.kimbar.util.PathPropertyReader;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -35,7 +36,7 @@ public class UpdateUserCommand implements Command {
     }
 
     @Override
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         UserService us = ServiceProvider.getInstance().getUserService();
 
         List<String> list = extractDataFromBody(req);
@@ -62,7 +63,9 @@ public class UpdateUserCommand implements Command {
         //with pictures 18 without 17
         if (list.size() == 17) {
             userId = list.get(0);
-            name = new String (list.get(1).getBytes ("iso-8859-1"), "UTF-8");
+            //replace with normal impl
+            path = PathPropertyReader.readPhotoPath() + File.separator + list.get(0) + File.separator + list.get(0) + ".jpg";
+            name = list.get(1);
             surname = list.get(2);
             lastName = list.get(3);
             date = list.get(4);
@@ -80,8 +83,8 @@ public class UpdateUserCommand implements Command {
             workplace = list.get(16);
         } else {
             userId = list.get(0);
-            path = PropertyReader.readPhotoPath() + File.separator + list.get(0) + File.separator + list.get(1);
-            name = new String (list.get(2).getBytes ("iso-8859-1"), "UTF-8");
+            path = PathPropertyReader.readPhotoPath() + File.separator + list.get(0) + File.separator + list.get(1);
+            name = list.get(2);
             surname = list.get(3);
             lastName = list.get(4);
             date = list.get(5);
@@ -100,14 +103,33 @@ public class UpdateUserCommand implements Command {
         }
 
 
+        //exctract in method
+        Gender gdr = null;
+        if (gender.equals("Male") || gender.equals("Female")){
+            gdr = Gender.valueOf(gender);
+        }
+
+        MaritalStatus ms = null;
+        if (maritalStatus.equals(MaritalStatus.Married.toString()) || maritalStatus.equals(MaritalStatus.Single.toString())){
+            ms = MaritalStatus.valueOf(maritalStatus);
+        }
+
+
         try {
-            us.updateUser(name, surname,lastName,DateChecker.check(date),Gender.valueOf(gender),
-                    citizenship,maritalStatus, webSite, email, workplace,
+            log.debug("Parameters : " +  name+ surname+lastName+DateConverter.convert(date)+gdr+
+                    citizenship+ms+ webSite+ email+ workplace+
+                    country+city+street+
+                    house+numOfFlat+NumericChecker.check(index)+
+                    path+ NumericChecker.check(userId) );
+
+           log.debug(us.updateUser(name, surname,lastName,DateConverter.convert(date),gdr,
+                    citizenship,ms, webSite, email, workplace,
                     country,city,street,
                     house,numOfFlat,NumericChecker.check(index),
-                    path, NumericChecker.check(userId));
+                    path, NumericChecker.check(userId)));
         } catch (ServiceException | ParseException e) {
             log.error(e);
+            throw new ServiceException();
         }
     }
 
@@ -139,29 +161,29 @@ public class UpdateUserCommand implements Command {
                         ext = "." + fileExtension[fileExtension.length - 1];
 
                         if (!result.get(1).equals("undefined")) {
-                            FileUtils.deleteDirectory(new File(PropertyReader.readPhotoPath() + File.separator + usrId));
+                            FileUtils.deleteDirectory(new File(PathPropertyReader.readPhotoPath() + File.separator + usrId));
                             DirectoryCreator.createPhotoSubFolderForUser(usrId);
-                            path = PropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + ext;
+                            path = PathPropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + ext;
                             item.write(new File(path));
                         }
                     }
                 }
-                result.add(multi.get(1).getString());
-                result.add(multi.get(2).getString());
-                result.add(multi.get(3).getString());
-                result.add(multi.get(4).getString());
-                result.add(multi.get(5).getString());
-                result.add(multi.get(6).getString());
-                result.add(multi.get(7).getString());
-                result.add(multi.get(8).getString());
-                result.add(multi.get(9).getString());
-                result.add(multi.get(10).getString());
-                result.add(multi.get(11).getString());
-                result.add(multi.get(12).getString());
-                result.add(multi.get(13).getString());
-                result.add(multi.get(14).getString());
-                result.add(multi.get(15).getString());
-                result.add(multi.get(16).getString());
+                result.add(multi.get(1).getString( "UTF-8" ));
+                result.add(multi.get(2).getString( "UTF-8" ) );
+                result.add(multi.get(3).getString( "UTF-8" ) );
+                result.add(multi.get(4).getString( "UTF-8" ) );
+                result.add(multi.get(5).getString( "UTF-8" ) );
+                result.add(multi.get(6).getString( "UTF-8" ) );
+                result.add(multi.get(7).getString( "UTF-8" ) );
+                result.add(multi.get(8).getString( "UTF-8" ) );
+                result.add(multi.get(9).getString( "UTF-8" ) );
+                result.add(multi.get(10).getString( "UTF-8" ) );
+                result.add(multi.get(11).getString( "UTF-8" ) );
+                result.add(multi.get(12).getString( "UTF-8" ) );
+                result.add(multi.get(13).getString( "UTF-8" ) );
+                result.add(multi.get(14).getString( "UTF-8" ) );
+                result.add(multi.get(15).getString( "UTF-8" ) );
+                result.add(multi.get(16).getString( "UTF-8" ) );
             } catch (Exception e) {
                 log.error(e);
             }

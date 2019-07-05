@@ -19,8 +19,8 @@ public class AttachmentDaoImpl implements AttachmentDao {
             "INNER JOIN attachment \n" +
             "ON client.idclient = attachment.idclient WHERE attachment.idclient = ?";
 
-    private static final String UPDATE_ATTACHMENT = "UPDATE attachment SET commentary = ? , name= ?  WHERE idattachment = ? ";
-    private static final String GET_COUNT_ATTACHMENTS = "SELECT COUNT(idattachment) FROM attachment;";
+    private static final String UPDATE_ATTACHMENT = "UPDATE attachment SET commentary = ? , name = ?  WHERE idattachment = ? ";
+    private static final String GET_COUNT_ATTACHMENTS = "SELECT  idattachment FROM attachment ORDER BY idattachment DESC LIMIT 0, 1 ;";
     private static final String DELETE_ATTACHMENT = "DELETE FROM attachment WHERE idattachment in(?)";
 
     @Override

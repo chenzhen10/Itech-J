@@ -9,7 +9,7 @@ public class DirectoryCreator {
     private DirectoryCreator(){}
 
     public static void createFileDirectory() throws IOException {
-        File file = new File(PropertyReader.readFilePath());
+        File file = new File(PathPropertyReader.readFilePath());
 
         //if there is no dir with such name createFileDirectory it
         if(!file.isDirectory()) {
@@ -18,7 +18,7 @@ public class DirectoryCreator {
     }
 
     public static void createFileSubFolderForUser(String userId) throws IOException {
-        File file = new File(PropertyReader.readFilePath() + File.separator + userId);
+        File file = new File(PathPropertyReader.readFilePath() + File.separator + userId);
         //if there is no dir with such name createFileDirectory it
         if(!file.isDirectory()) {
             file.mkdir();
@@ -27,7 +27,7 @@ public class DirectoryCreator {
 
 
     public static void createPhotoDirectory() throws IOException {
-        File file = new File(PropertyReader.readPhotoPath());
+        File file = new File(PathPropertyReader.readPhotoPath());
 
         //if there is no dir with such name createFileDirectory it
         if(!file.isDirectory()) {
@@ -36,7 +36,7 @@ public class DirectoryCreator {
     }
 
     public static void createPhotoSubFolderForUser(String userId) throws IOException {
-        File file = new File(PropertyReader.readPhotoPath() + File.separator + userId);
+        File file = new File(PathPropertyReader.readPhotoPath() + File.separator + userId);
         //if there is no dir with such name createFileDirectory it
         if(!file.isDirectory()) {
             file.mkdir();

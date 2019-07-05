@@ -2,6 +2,7 @@ package by.itech.kimbar.controller;
 
 
 import by.itech.kimbar.controller.command.Command;
+import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.service.impl.schedule.CongratulateJob;
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -15,12 +16,13 @@ import java.io.IOException;
 
 public class FrontController extends HttpServlet {
     private static final Logger log = Logger.getLogger(FrontController.class);
+
     @Override
-    public void init()  {
+    public void init() {
         try {
             CongratulateJob.sendListOfBirthdayMen();
         } catch (SchedulerException e) {
-           log.error(e);
+            log.error(e);
         }
 
     }
@@ -28,61 +30,80 @@ public class FrontController extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        StringBuilder sb = new StringBuilder();
         CommandProvider cm = CommandProvider.getInstance();
+        String param = req.getPathInfo().replaceFirst("/","");
 
-        String[] param = req.getPathInfo().split("/");
 
-        sb.append(param[1]).append(param[2].substring(0,1).toUpperCase()).append(param[2].substring(1));
+        System.out.println(param);
 
-        System.out.println(sb);
-
-        if (sb.length() != 0 ) {
-            Command c = cm.getCommand(sb.toString());
-            c.execute(req, resp);
+        if (param.length() != 0) {
+            Command c = cm.getCommand(param);
+            try {
+                c.execute(req, resp);
+            } catch (ServiceException e) {
+                resp.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                log.error(e);
+            }
         }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        StringBuilder sb = new StringBuilder();
         CommandProvider cm = CommandProvider.getInstance();
 
-        String[] param = req.getPathInfo().split("/");
-        sb.append(param[1]).append(param[2].substring(0,1).toUpperCase()).append(param[2].substring(1));
+        String param = req.getPathInfo().replaceFirst("/","");
 
-        System.out.println(sb);
 
-        if (sb.length() != 0 ) {
-            Command c = cm.getCommand(sb.toString());
-            c.execute(req, resp);
+        System.out.println(param);
+
+        if (param.length() != 0) {
+            Command c = cm.getCommand(param);
+            try {
+                c.execute(req, resp);
+            } catch (ServiceException e) {
+                resp.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                log.error(e);
+            }
         }
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        StringBuilder sb = new StringBuilder();
         CommandProvider cm = CommandProvider.getInstance();
 
-        String[] param = request.getPathInfo().split("/");
-        sb.append(param[2]);
+        String param = request.getPathInfo().replaceFirst("/","");
 
-        System.out.println(sb);
 
-        if (sb.length() != 0 ) {
-            Command c = cm.getCommand(sb.toString());
-            c.execute(request, response);
+        System.out.println(param);
+
+
+        if (param.length() != 0) {
+            Command c = cm.getCommand(param);
+            try {
+                c.execute(request, response);
+            } catch (ServiceException e) {
+                response.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                log.error(e);
+            }
         }
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         CommandProvider cm = CommandProvider.getInstance();
         String param = request.getParameter("command");
 
-        System.out.println(param);
         if (param != null && !param.equals("")) {
             Command c = cm.getCommand(param);
-            c.execute(request, response);
+            try {
+                c.execute(request, response);
+            } catch (ServiceException e) {
+                response.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                log.error(e);
+            }
+
         }
 
     }

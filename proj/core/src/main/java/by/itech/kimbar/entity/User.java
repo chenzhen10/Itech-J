@@ -22,11 +22,13 @@ public class User implements Serializable {
     private Date birthDate;
     private Gender gender;
     private String citizenship;
-    private String maritalStatus;
+    private MaritalStatus maritalStatus;
     private String webSite;
     private String email;
     private String workplace;
     private Address address;
     private String photoPath;
+
+
 
 }

@@ -16,25 +16,24 @@ class CommandProvider {
 
     private CommandProvider() {
         commands.put("allUsers", new AllUserCommand());
-        commands.put("addUser", new AddUserCommand());
-        commands.put("deleteUser", new DeleteUserCommand());
-        commands.put("editUser", new UpdateUserCommand());
-        commands.put("addAttachment", new AddAttachmentCommand());
-        //delete
-        commands.put("allAttachments", new AllAttachmentCommand());
-        commands.put("editAttachment", new UpdateAttachmentCommand());
+        commands.put("add/user", new AddUserCommand());
+        commands.put("delete/user", new DeleteUserCommand());
+        commands.put("edit/user", new UpdateUserCommand());
+        commands.put("add/attachment", new AddAttachmentCommand());
+
+        commands.put("edit/attachment", new UpdateAttachmentCommand());
         commands.put("allUserAttachments", new AllUserAttachmentCommand());
         commands.put("downloadFile", new DownloadAttachmentCommand());
-        commands.put("deleteAttachment", new DeleteAttachmentCommand());
-        //delete
-        commands.put("all_phones", new AllPhoneCommand());
+        commands.put("delete/attachment", new DeleteAttachmentCommand());
+
         commands.put("allUserPhones", new AllUserPhoneCommand());
-        commands.put("addPhone", new AddPhoneCommand());
-        commands.put("deletePhone", new DeletePhoneCommand());
-        commands.put("editPhone", new UpdatePhoneCommand());
+        commands.put("add/phone", new AddPhoneCommand());
+        commands.put("delete/phone", new DeletePhoneCommand());
+        commands.put("edit/phone", new UpdatePhoneCommand());
         commands.put("findUser", new FindUserCommand());
         commands.put("pagination", new PaginationUserCommand());
         commands.put("countOfUsers", new UserCountCommand());
+        commands.put("countOfFoundUsers", new CountOfFoundUserCommand());
         commands.put("sendEmail", new SendEmailCommand());
         commands.put("showUserPhoto", new ShowUserPhotoCommand());
         commands.put("templates", new MessageTemplateCommand());
