@@ -4,8 +4,6 @@ import by.itech.kimbar.service.ServiceProvider;
 import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.service.impl.email.EmailSender;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -29,7 +27,7 @@ public class CongratulateJob implements Job {
         JobDetail job = JobBuilder.newJob(CongratulateJob.class).build();
 
         Trigger t = TriggerBuilder.newTrigger().withSchedule(CronScheduleBuilder.cronSchedule(" 0 0 9 1/1 * ? *")).build();
-//
+
         Scheduler sc = StdSchedulerFactory.getDefaultScheduler();
 
         sc.start();

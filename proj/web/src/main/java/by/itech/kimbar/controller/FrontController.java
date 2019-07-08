@@ -31,17 +31,15 @@ public class FrontController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         CommandProvider cm = CommandProvider.getInstance();
-        String param = req.getPathInfo().replaceFirst("/","");
+        String param = req.getPathInfo().replaceFirst("/", "");
 
-
-        System.out.println(param);
 
         if (param.length() != 0) {
             Command c = cm.getCommand(param);
             try {
                 c.execute(req, resp);
             } catch (ServiceException e) {
-                resp.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                resp.getWriter().write("{ \"error\" : \"" + e.getMessage() + "\" }");
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 log.error(e);
             }
@@ -52,17 +50,15 @@ public class FrontController extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         CommandProvider cm = CommandProvider.getInstance();
 
-        String param = req.getPathInfo().replaceFirst("/","");
+        String param = req.getPathInfo().replaceFirst("/", "");
 
-
-        System.out.println(param);
 
         if (param.length() != 0) {
             Command c = cm.getCommand(param);
             try {
                 c.execute(req, resp);
             } catch (ServiceException e) {
-                resp.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                resp.getWriter().write("{ \"error\" : \" " + e.getMessage() + "\" }");
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 log.error(e);
             }
@@ -72,10 +68,7 @@ public class FrontController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         CommandProvider cm = CommandProvider.getInstance();
 
-        String param = request.getPathInfo().replaceFirst("/","");
-
-
-        System.out.println(param);
+        String param = request.getPathInfo().replaceFirst("/", "");
 
 
         if (param.length() != 0) {
@@ -83,7 +76,7 @@ public class FrontController extends HttpServlet {
             try {
                 c.execute(request, response);
             } catch (ServiceException e) {
-                response.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                response.getWriter().write("{ \"error\" : \" " + e.getMessage() + " \" }");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 log.error(e);
             }
@@ -99,7 +92,7 @@ public class FrontController extends HttpServlet {
             try {
                 c.execute(request, response);
             } catch (ServiceException e) {
-                response.getWriter().write("{ \"error\" : \"Data was ignored . Reason : incorrect data was inputted\" }");
+                response.getWriter().write("{ \"error\" : \" " + e.getMessage() + "\" }");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 log.error(e);
             }

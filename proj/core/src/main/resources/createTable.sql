@@ -1,4 +1,3 @@
-CREATE SCHEMA kim ;
 #attachment
 CREATE TABLE IF NOT EXISTS `kim`.`attachment` (
   `idattachment` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -26,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `kim`.`client` (
   `date` DATE NULL DEFAULT NULL,
   `gender` ENUM('Male', 'Female') NULL DEFAULT NULL,
   `citizenship` VARCHAR(65) NULL DEFAULT NULL,
-  `marital_status` VARCHAR(45) NULL DEFAULT NULL,
+  `marital_status` ENUM('Single', 'Married') NULL DEFAULT NULL,
   `web_site` VARCHAR(75) NULL DEFAULT NULL,
   `email` VARCHAR(45) NULL DEFAULT NULL,
   `workplace` VARCHAR(75) NULL DEFAULT NULL,

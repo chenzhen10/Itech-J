@@ -1,4 +1,20 @@
 'use strict';
+//var
+
+var emails = [];
+var receivers;
+var recieversName = [];
+var idTemplate;
+var emailForm = document.querySelector('#email');
+
+var date = [] ;
+var maritalStatus = [];
+var workplace = [];
+
+var sendBack = document.querySelector("#searchBack");
+
+var selectBtn = document.querySelector('#messageTemplate');
+var textField = document.querySelector('#message');
 
 function isEmailExists(array){
     var isEmailsEmpty = true;
@@ -10,13 +26,6 @@ function isEmailExists(array){
     return isEmailsEmpty;
 }
 
-
-
-var emails = [];
-var receivers;
-var recieversName = [];
-var idTemplate;
-var emailForm = document.querySelector('#email');
 sendEmailForm.addEventListener("click",function () {
     emails = [];
     var checkboxes = document.getElementsByName("users");
@@ -49,9 +58,9 @@ sendEmailForm.addEventListener("click",function () {
         showTemplates();
         receivers = document.forms.emailForm.receivers.value = emails;
 
-        emailForm.style.display = 'block';
+        showEmailForm();
+
         hideAllTables();
-        history.pushState(null,null,'client/sendEmail');
     }else if (!isEmailExists(emails)){
         alert("You cant send because of email(s) don't exist");
         recieversName = [];
@@ -64,15 +73,11 @@ sendEmailForm.addEventListener("click",function () {
 
 });
 //send email
-var date = [] ;
-var maritalStatus = [];
-var workplace = [];
+
 
 email.addEventListener("click",function () {
     var topic = document.forms.emailForm.topic.value;
     var message = document.forms.emailForm.message.value;
-
-
     var parameter = '';
 
     if (idTemplate === '1'){
@@ -92,8 +97,7 @@ email.addEventListener("click",function () {
             + '&idTemplate=' + idTemplate + '&parameter=' + parameter
         };
 
-        fetch('',options).then(function (value) {
-            history.back();
+        fetch('client/sendEmail',options).then(function (value) {
             showUserTable();
             refreshUserTable(0, 5);
 
@@ -106,20 +110,19 @@ email.addEventListener("click",function () {
             workplace = [];
 
             resetEmailForm();
-            emailForm.style.display = 'none';
+            hideEmailForm();
         }).catch(err => console.log(err));
     }else{
         alert("You can't send empty email ");
     }
 });
 
-var sendBack = document.querySelector("#searchBack");
+
 sendBack.addEventListener("click",function (evt) {
     recieversName = [];
     date = [] ;
     maritalStatus = [];
     workplace = [];
-    history.back();
     refreshUserTable(0,5);
     showUserTable();
     emailForm.style.display = 'none';
@@ -133,11 +136,9 @@ function showTemplates() {
 function refreshTemplates() {
     var templateField = document.querySelector('#messageTemplate');
     templateField.innerHTML = '';
-
 }
 
-var selectBtn = document.querySelector('#messageTemplate');
-var textField = document.querySelector('#message');
+
 selectBtn.addEventListener("change",function () {
 
     for (var i = 0; i < selectBtn.length ; i++) {
@@ -150,7 +151,7 @@ selectBtn.addEventListener("change",function () {
             }
             else  {
                 textField.disabled = false;
-                textField.innerHTML = '';
+                textField.value = '';
             }
         }
     }
@@ -162,4 +163,12 @@ function resetEmailForm() {
     document.getElementById('emailForm').reset();
     textField.disabled = false;
     textField.innerHTML = '';
+}
+
+function hideEmailForm(){
+    emailForm.style.display = 'none';
+}
+
+function showEmailForm(){
+    emailForm.style.display = 'block';
 }

@@ -31,7 +31,6 @@ public class AddAttachmentCommand implements Command {
         }
     }
 
-
     @Override
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws ServiceException {
         ServiceProvider sp = ServiceProvider.getInstance();
@@ -59,7 +58,7 @@ public class AddAttachmentCommand implements Command {
             log.debug( as.attachFile(name, comment, userId, path));
         } catch (ServiceException e) {
             log.error(e);
-            throw new ServiceException();
+            throw new ServiceException("Commentary was too long it should be less then 250");
         } catch (Exception e) {
             log.error(e);
             throw new ServiceException();

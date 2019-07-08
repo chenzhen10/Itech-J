@@ -19,6 +19,10 @@ public class PhoneDaoImpl implements PhoneDao {
             "INNER JOIN phone\n" +
             "ON client.idclient = phone.idclient WHERE phone.idclient = ? ";
     private static final String DELETE_PHONE = "DELETE FROM phone WHERE idphone in(?)";
+    private static final String SEARCH_DUPLICATE_PHONE = "SELECT COUNT(*) as count " +
+            "FROM phone  " +
+            "WHERE country_code = ? AND operator_code = ? AND number = ?  " +
+            "GROUP BY country_code, operator_code,number HAVING COUNT(*) > 1";
     private static final String UPDATE_PHONE = "UPDATE phone SET country_code = ? , operator_code = ? , number  = ?, type = ? , commentary = ?  WHERE idphone = ? ";
     private static final String CREATE_PHONE = "INSERT INTO phone (country_code, operator_code,number, type, commentary, idclient) VALUES (?,?,?,?,?,?)";
 
@@ -151,6 +155,31 @@ public class PhoneDaoImpl implements PhoneDao {
             ConnectionCloser.close(c, null, st);
         }
         return res == NUMBER_OF_VALID_OPERATION;
+    }
+
+    @Override
+    public boolean findDuplicatePhone(Integer countryCode,Integer operatorCode,Integer number) throws DaoException {
+        int result = 0;
+        Connection c = ConnectionPool.getInstance().getConnection();
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = c.prepareStatement(SEARCH_DUPLICATE_PHONE);
+            st.setObject(1,countryCode);
+            st.setObject(2,operatorCode);
+            st.setObject(3,number);
+
+            rs = st.executeQuery();
+
+            while (rs.next()){
+                result = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        } finally {
+            ConnectionCloser.close(c, rs, st);
+        }
+        return result != 0;
     }
 
     //via id we can manipulate our date in future in proper way

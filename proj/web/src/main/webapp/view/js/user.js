@@ -1,17 +1,24 @@
 'use strict';
+//variables
+var backBtn = document.querySelector('.backUser');
+var userApplyButton = document.querySelector('#userEdit');
+var table = document.querySelector('#dataTable');
+var counter;
+var userId;
+var inputAdd = document.querySelectorAll('.img')[0];
 
+var input = document.querySelectorAll('.img')[1];
+var result;
+var bac2Btn = document.querySelector('.backEditUser');
 
 
 addUser.addEventListener("click",function () {
+
+    var img = document.querySelectorAll('.currentImage')[0];
+    img.src = 'client?command=showUserPhoto' +  '&refresh=' + Math.random() ;
+
     hideSearchForm();
-
-    var showAddUser = document.querySelector('.addUsr');
-
-
-    history.pushState(null,null,'client/add/user');
-
-    showAddUser.style.display = "block";
-
+    showAddUserForm();
     hideAllTables();
 });
 
@@ -24,7 +31,7 @@ document.forms.add.onsubmit = function (e) {
     var name = document.forms.add.name.value;
     var surname = document.forms.add.surname.value;
     var lastName = document.forms.add.lastName.value;
-    var date = document.forms.add.date.value;
+    var date = dateCreator();
     var gender = document.forms.add.gender.value;
     var citizenship = document.forms.add.citizenship.value;
     var maritalStatus = document.forms.add.maritalStatus.value;
@@ -37,30 +44,54 @@ document.forms.add.onsubmit = function (e) {
     var house = document.forms.add.house.value;
     var numOfFlat = document.forms.add.numOfFlat.value;
     var index = document.forms.add.index.value;
+    var photoPath = document.querySelectorAll('.img')[0];
+
+
+    var result = true;
+
+    var data = new FormData();
+
+    if (typeof photoPath.files[0] !== 'undefined') {
+        var imgOnly = photoPath.files[0].type.split('/')[0];
+        result = imgOnly === 'image' || imgOnly === 'undefined';
+
+    }
+    data.append('Photo', photoPath.files[0]);
+    data.append('name',name.trim());
+    data.append('surname',surname.trim());
+    data.append('lastName',lastName.trim());
+    data.append('birthDate',date);
+    data.append('gender',gender);
+    data.append('citizenship',citizenship.trim());
+    data.append('maritalStatus',maritalStatus.trim());
+    data.append('webSite',webSite.trim());
+    data.append('email',email.trim());
+    data.append('country', country.trim());
+    data.append('city',city.trim());
+    data.append('street',street.trim());
+    data.append('house',house.trim());
+    data.append('numOfFlat',numOfFlat.trim());
+    data.append('index',index);
+    data.append('workplace',workplace.trim());
 
 
     var options = {
         method : 'POST',
-        headers : {'Content-Type' : 'application/x-www-form-urlencoded'},
-        body : '&name=' + name + '&' + 'surname=' + surname + '&' + 'lastName=' + lastName + '&' + 'date=' + date
-        + '&' + 'gender=' + gender + '&' + 'citizenship=' + citizenship + '&' + 'maritalStatus=' + maritalStatus  + '&' + 'webSite=' + webSite
-        + '&' + 'email=' + email + '&' + 'workplace=' + workplace + '&' + 'country=' + country + '&' + 'city=' +  city + '&' + 'street=' +  street
-        + '&' + 'house=' +  house + '&' + 'numOfFlat=' +  numOfFlat + '&' + 'index=' +  index
+        body : data
     };
 
 
+    if (isValidUserForm(name,surname,lastName,citizenship,country,city,email,index) &&  result && checkDate(date) && !validateDate(new Date(date))) {
 
-    if (isValidUserForm(name,surname,lastName,citizenship,country,city,email,index) && !validateDate(date.toString())) {
-
-
-        fetch('',options).then(function (value) {
+        fetch('client/add/user',options).then(function (value) {
             var hideAddUsr = document.querySelector('.addUsr');
             hideAddUsr.style.display = 'none';
             resetUserAddForm();
 
-            history.back();
+
             refreshUserTable(0,5);
             showUserTable();
+            resetUseAddFileElement();
 
             if (value.status === 500) {
                 return value.json();
@@ -68,18 +99,22 @@ document.forms.add.onsubmit = function (e) {
         }).then(function(res) {
             showError(res);
         }).catch(err => console.log(err));
+    }else if (!result) {
+        alert('You can upload only image');
+    }else if(!checkDate(date)) {
+        alert('You should input full date');
+    }else if (validateDate(new Date(date))) {
+        alert("Your birthday can't be in future please choose correct date");
     }else {
         alert('Name, surname, lastName,citizenship,maritalStatus,country,city should contain only letters and index should contain only digits ');
     }
 
 
 };
-var backBtn = document.querySelector('.backUser');
+
 backBtn.addEventListener("click",function () {
-    history.back();
     showUserTable();
-    var showAddUser = document.querySelector('.addUsr');
-    showAddUser.style.display = "none";
+    hideAddUserForm();
 });
 
 // delete user
@@ -104,8 +139,7 @@ deleteUser.addEventListener("click",function (ev) {
             method : 'DELETE',
             headers : {'Content-Type' : 'application/x-www-form-urlencoded'}
         };
-        var req = new Request('client/delete/user?id=' + values ,options);
-        fetch(req).then(function (value) {
+        fetch('client/delete/user?id=' + values,options).then(function (value) {
             refreshUserTable(0,5);
 
             if (value.status === 500) {
@@ -122,35 +156,33 @@ deleteUser.addEventListener("click",function (ev) {
 
 
 //edit user
-var userEditForm = document.querySelector('#editUsr');
-var userApplyButton = document.querySelector('#userEdit');
-
-var table = document.querySelector('#dataTable');
-
-var counter;
-var userId;
-
-
-var input = document.querySelector('#img');
-
 
 input.addEventListener("change",function (ev) {
-     toDataURL(input);
+     toDataURLForUserEdit(input);
 });
 
+inputAdd.addEventListener("change",function (ev) {
+    toDataURL(inputAdd);
+});
 function editUser() {
     hideSearchForm();
-    history.pushState(null,null,'client/edit/user');
     showAllTablesExceptUser();
     refreshAllTableByUserId(userId);
     showUserImage();
 
-    userEditForm.style.display = 'block';
+    showEditUserForm();
+
+    var fullDate = result[2].innerHTML.trim().split('-');
 
     document.forms.edit.name.value = result[1].children[0].children[1].innerHTML.trim();
     document.forms.edit.surname.value = result[1].children[0].children[0].innerHTML.trim();
     document.forms.edit.lastName.value = result[1].children[0].children[2].innerHTML.trim();
-    document.forms.edit.date.value = result[2].innerHTML.trim();
+
+    if (fullDate.length > 1) {
+        document.forms.edit.year.value = fullDate[0];
+        document.forms.edit.month.value = fullDate[1].replace('0', '');
+        document.forms.edit.day.value = fullDate[2].replace('0', '');
+    }
     document.forms.edit.gender.value = result[3].innerHTML.trim();
     document.forms.edit.citizenship.value =  result[4].innerHTML.trim();
     document.forms.edit.maritalStatus.value = result[5].innerHTML.trim();
@@ -164,7 +196,7 @@ function editUser() {
     document.forms.edit.index.value = result[13].innerHTML.trim();
     document.forms.edit.workplace.value = result[14].innerHTML.trim();
 }
-var result;
+
 
 table.addEventListener("mouseover",function (evt) {
 
@@ -186,13 +218,12 @@ table.addEventListener("mouseover",function (evt) {
 
 });
 
-var bac2Btn = document.querySelector('.backEditUser');
+
 bac2Btn.addEventListener("click",function (evt) {
-    history.back();
     showUserTable();
     refreshUserTable(0,5);
     hideAllTablesExceptUser();
-    userEditForm.style.display = 'none';
+    hideEditUserForm();
 });
 
 userApplyButton.addEventListener("click",function (evt) {
@@ -200,7 +231,7 @@ userApplyButton.addEventListener("click",function (evt) {
     var name = document.forms.edit.name.value;
     var surname =  document.forms.edit.surname.value;
     var lastName =  document.forms.edit.lastName.value;
-    var date = document.forms.edit.date.value;
+    var date = dateCreatorForUpdateUser();
     var gender = document.forms.edit.gender.value;
     var citizenship = document.forms.edit.citizenship.value;
     var maritalStatus = document.forms.edit.maritalStatus.value;
@@ -213,11 +244,13 @@ userApplyButton.addEventListener("click",function (evt) {
     var house = document.forms.edit.house.value;
     var numOfFlat = document.forms.edit.numOfFlat.value;
     var index = document.forms.edit.index.value;
-    var photoPath = document.getElementById('img');
+    var photoPath = document.querySelectorAll('.img')[1];
+    var ext = document.querySelectorAll('.photoPath')[counter].innerHTML.split('.')[1];
 
     var result = true;
 
     var data = new FormData();
+
     if (typeof photoPath.files[0] !== 'undefined') {
         var imgOnly = photoPath.files[0].type.split('/')[0];
         result = imgOnly === 'image' || imgOnly === 'undefined';
@@ -241,37 +274,35 @@ userApplyButton.addEventListener("click",function (evt) {
     data.append('index',index);
     data.append('workplace',workplace.trim());
     data.append('userId',userId);
-
-
+    data.append('extension',ext);
 
     var options = {
         method : 'POST',
         body : data
     };
 
+    if (isValidUserForm(name,surname,lastName,citizenship,country,city,email, index) && result && checkDate(date)  && !validateDate(new Date(date))) {
 
-    if (isValidUserForm(name,surname,lastName,citizenship,country,city,email, index) && result  && !validateDate(date.toString())) {
-        userEditForm.style.display = 'none';
-
-        fetch('',options).then(function (value) {
+        hideEditUserForm();
+        fetch('client/edit/user',options).then(function (value) {
             if (value.status === 500) {
                 return value.json();
             }
         }).then(function(res) {
             showError(res);
         }).then(function (value) {
-            if(typeof pickedPhone !== 'undefined'){
-                history.back();
-                history.pushState(null,null,'client/edit/phone');
+            if(typeof pickedPhone !== 'undefined' && pickedPhone !== ''){
+
+
                 indexOfUpdatedPhone.forEach(function (value,index) {
                     savePhoneUpdate(value);
                 })
                 sendUpdatedPhone();
             }
         }).then(function (value) {
-            if(typeof pickedAttachment !== 'undefined'){
-                history.back();
-                history.pushState(null,null,'client/edit/attachment');
+            if(typeof pickedAttachment !== 'undefined' && pickedAttachment !== ''){
+
+
                 indexOfUpdatedAttachment.forEach(function (value,index) {
                     saveAttachmentUpdate(value);
                 })
@@ -281,7 +312,7 @@ userApplyButton.addEventListener("click",function (evt) {
             refreshUserTable(0,5);
             hideAllTables();
             showUserTable();
-            history.back();
+
 
             resetUserEditFileElement();
 
@@ -292,14 +323,16 @@ userApplyButton.addEventListener("click",function (evt) {
             indexOfUpdatedAttachment = [];
             phoneIdAcclumulator = [];
             attachmentIdAccumulator = [];
-
         }).catch(err => console.log(err));
-    }else if (validateDate(date)) {
-        alert('Your birthday cant be in the future please choose correct date');
+    }else if (!result) {
+        alert('You can upload only image');
+    }else if(!checkDate(date)) {
+        alert('You should input full date');
+    }else if (validateDate(new Date(date))) {
+        alert("Your birthday can't be in future please choose correct date");
     }else {
-        alert('Name, surname, lastName,citizenship,maritalStatus,country,city should contain only letters and index should contain only digits and you can upload only image ');
+        alert('Name, surname, lastName,citizenship,maritalStatus,country,city should contain only letters and index should contain only digits');
     }
-
 
 });
 
@@ -312,7 +345,7 @@ function showUserImage() {
     var extension = path[counter].innerHTML.split('\\')[fileL - 1].split('.')[1];
 
 
-    var img = document.querySelector('#currentImage');
+    var img = document.querySelectorAll('.currentImage')[1];
     img.src = 'client?command=showUserPhoto&userId=' + userId + '&extension=' + extension  + '&refresh=' + Math.random() ;
 }
 
@@ -326,15 +359,39 @@ searchUser.addEventListener("click",function (ev) {
     searchForm.style.display = 'block';
 });
 
-var startValue = 0;
-var totalValue = countOfUserPerPage.value;
+
 
 searchUsrButton.addEventListener("click",function (evt) {
     evt.preventDefault();
+
     var name = document.forms.search.name.value.trim();
     var surname = document.forms.search.surname.value.trim();
     var lastName = document.forms.search.lastName.value.trim();
-    var date = document.forms.search.date.value;
+    var day = document.forms.search.day.value;
+    var month = document.forms.search.month.value;
+    var year = document.forms.search.year.value;
+
+    var dayF = '' ;
+    var monthF = '' ;
+    var yearF = '' ;
+
+    if (!isNumeric(year)) {
+        year = '';
+    }else{
+        yearF += year;
+    }
+    if (!isNumeric(month)) {
+        month = '';
+    }else{
+        monthF += month;
+    }
+    if (!isNumeric(day)) {
+        day = '';
+    }else{
+        dayF += day;
+    }
+
+
     var gender = document.forms.search.gender.value;
     var citizenship = document.forms.search.citizenship.value.trim();
     var maritalStatus = document.forms.search.maritalStatus.value.trim();
@@ -351,24 +408,15 @@ searchUsrButton.addEventListener("click",function (evt) {
         headers : {'Content-Type' : 'application/json;charset=UTF-8;'}
     };
 
-    if  (isValidSearchForm(name,surname,lastName, citizenship,country, city,index)){
+    if  (isValidSearchForm(name,surname,lastName, citizenship,country, city,index) ){
         var userTable = document.querySelector('#dataTable');
         userTable.innerHTML = '';
 
-        history.pushState(null,null,'client?command=findUser&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&date=' + date
-            + '&gender=' + gender + '&citizenship=' + citizenship + '&maritalStatus=' + maritalStatus + '&country=' + country
-            + '&city=' + city + '&street=' + street + '&house=' + house + '&numOfFlat=' + numOfFlat + '&index=' + index);
-
-        loadData('client?command=findUser&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&date=' + date
-            + '&gender=' + gender + '&citizenship=' + citizenship + '&maritalStatus=' + maritalStatus + '&country=' + country
-            + '&city=' + city + '&street=' + street + '&house=' + house  + '&numOfFlat=' + numOfFlat + '&index=' + index
-            + '&start=' + startValue  + '&total=' +  totalValue,options)
-            .then(res => render(res,'users','dataTable')).then(function () {
-            return fetch('client?command=countOfFoundUsers&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&date=' + date
+           fetch('client?command=countOfFoundUsers&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&year=' + yearF + '&month=' + monthF + '&day=' + dayF
                 + '&gender=' + gender + '&citizenship=' + citizenship + '&maritalStatus=' + maritalStatus + '&country=' + country
-                + '&city=' + city + '&street=' + street + '&house=' + house  + '&numOfFlat=' + numOfFlat + '&index=' + index);
-        }).then(res => res.json()).then(function (res) {
-            paginationForSearch(res,name,surname,lastName,date,gender,citizenship,maritalStatus,country,city,street,house,numOfFlat,index);
+                + '&city=' + city + '&street=' + street + '&house=' + house  + '&numOfFlat=' + numOfFlat + '&index=' + index,options)
+            .then(res => res.json()).then(function (res) {
+            paginationForSearch(res,name,surname,lastName,yearF,monthF,dayF,gender,citizenship,maritalStatus,country,city,street,house,numOfFlat,index);
         }).catch(err => console.log(err));
         showUserTable();
     }else {
@@ -380,18 +428,10 @@ searchUsrButton.addEventListener("click",function (evt) {
 back.addEventListener("click",function () {
     showPagination();
     hideSearchPagination();
-    history.replaceState(null,null,'client');
+    showUserTable();
     hideSearchForm();
     refreshUserTable(0,5);
-
 });
-
-function isValidSearchForm(name, surname, lastName,citizenship,country,city , index) {
-    return name.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)') && surname.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)')
-        && lastName.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)') && citizenship.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)')
-        && country.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)')
-        && city.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)') && index.toString().match('(^$)|(^\\d{0,10}$)');
-}
 
 
 function hideSearchForm() {
@@ -405,7 +445,11 @@ function resetUserAddForm() {
 }
 
 function resetUserEditFileElement() {
-    document.querySelector('#img').value = "";
+    document.querySelector('.img').value = "";
+}
+
+function resetUseAddFileElement() {
+    document.querySelectorAll('.currentImage')[0].value = "";
 }
 
 function resetUserSearchForm() {
@@ -431,16 +475,22 @@ function showSearchPagination() {
     document.querySelector('#recordsPerPageS').style.display = 'inline-block';
 }
 
+function hideEditUserForm(){
+    var userEditForm = document.querySelector('#editUsr');
+    userEditForm.style.display = 'none';
 
-function isValidUserForm(name, surname, lastName,citizenship,country,city,email , index) {
-    var re = /(^$)|^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return name.toString().match('^[A-Za-zА-Яа-яёЁ]+$') && surname.toString().match('^[A-Za-zА-Яа-яёЁ]+$')
-        && lastName.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)') && citizenship.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)')
-        && country.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)')
-        && city.toString().match('(^$)|(^[A-Za-zА-Яа-яёЁ]+$)') && email.toString().match(re)
-        && index.toString().match('(^$)|(^\\d{0,10}$)');
+}
+function showEditUserForm() {
+    var userEditForm = document.querySelector('#editUsr');
+    userEditForm.style.display = 'block';
 }
 
-function validateDate(date) {
-   return moment(date).isAfter(moment());
+function hideAddUserForm() {
+    var showAddUser = document.querySelector('.addUsr');
+    showAddUser.style.display = "none";
+}
+
+function showAddUserForm() {
+    var showAddUser = document.querySelector('.addUsr');
+    showAddUser.style.display = "block";
 }

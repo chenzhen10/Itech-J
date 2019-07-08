@@ -9,7 +9,9 @@ import java.util.Date;
 import java.util.List;
 
 public interface UserDao {
-    Integer countOfUser() throws DaoException;
+    int countOfUser() throws DaoException;
+
+    int getNextUserId() throws DaoException;
 
     List<User> userPagination(Integer start, Integer total) throws DaoException;
 
@@ -17,12 +19,11 @@ public interface UserDao {
 
     List<User> findUser(String query) throws DaoException;
 
-
-    Integer countOfFoundUsers(String query) throws DaoException;
+    int countOfFoundUsers(String query) throws DaoException;
 
     boolean createUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
                        MaritalStatus maritalStatus, String webSite, String email, String workplace,
-                       String country, String city, String street, String house, String numOfFlat, Integer index) throws DaoException;
+                       String country, String city, String street, String house, String numOfFlat, Integer index,String photoPath) throws DaoException;
 
     boolean deleteUser(Integer[] id) throws DaoException;
     boolean updateUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,

@@ -1,8 +1,8 @@
 package by.itech.kimbar.controller.command.impl.user;
 
 import by.itech.kimbar.controller.command.Command;
-import by.itech.kimbar.util.PhotoReader;
 import by.itech.kimbar.util.PathPropertyReader;
+import by.itech.kimbar.util.PhotoReader;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +27,12 @@ public class ShowUserPhotoCommand implements Command {
                 } catch (IOException e1) {
                     log.error(e1);
                 }
+            }
+        }else{
+            try {
+                PhotoReader.read("placeholder.jpg", resp);
+            } catch (IOException e) {
+                log.error(e);
             }
         }
     }

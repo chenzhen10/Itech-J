@@ -29,6 +29,7 @@ by\itech\kimbar\util\EnumChecker.class
 by\itech\kimbar\dao\impl\connection\ConnectionPool.class
 by\itech\kimbar\entity\User.class
 by\itech\kimbar\dto\deserialize\DeserializeDto.class
+by\itech\kimbar\util\RequestBodyReader.class
 by\itech\kimbar\dao\impl\connection\ConnectionCloser.class
 by\itech\kimbar\service\attachment\AttachmentService.class
 by\itech\kimbar\util\FileEraser.class

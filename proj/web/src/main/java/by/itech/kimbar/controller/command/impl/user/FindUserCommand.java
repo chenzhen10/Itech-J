@@ -6,14 +6,12 @@ import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.service.ServiceProvider;
 import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.service.user.UserService;
-import by.itech.kimbar.util.DateConverter;
 import by.itech.kimbar.util.NumericChecker;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 
 
 public class FindUserCommand implements Command {
@@ -25,7 +23,6 @@ public class FindUserCommand implements Command {
         String name = req.getParameter("name");
         String surname = req.getParameter("surname");
         String lastName = req.getParameter("lastName");
-        String date = req.getParameter("date");
         String gender = req.getParameter("gender");
         String citizenship = req.getParameter("citizenship");
         String maritalStatus = req.getParameter("maritalStatus");
@@ -38,6 +35,10 @@ public class FindUserCommand implements Command {
         String start = req.getParameter("start");
         String total = req.getParameter("total");
 
+        String year = req.getParameter("year");
+        String month = req.getParameter("month");
+        String day = req.getParameter("day");
+
         Gender gdr = null;
         if (gender.equals("Male") || gender.equals("Female")) {
             gdr = Gender.valueOf(gender);
@@ -48,14 +49,18 @@ public class FindUserCommand implements Command {
             mS = MaritalStatus.valueOf(maritalStatus);
         }
 
+        System.out.println(year);
+        System.out.println(month);
+        System.out.println(day);
+
         try {
-            log.debug("Parameters : " + name + surname + lastName + gdr + DateConverter.convert(date) +
-                    mS + citizenship + country + city + street + house + numOfFlat + NumericChecker.check(index) +
-                    NumericChecker.check(start) + NumericChecker.check(total));
-            resp.getWriter().write(us.findUserByParameter(name, surname, lastName, gdr, DateConverter.convert(date),
+//            log.debug("Parameters : " + name + surname + lastName + gdr +  year + month + day +
+//                    mS + citizenship + country + city + street + house + numOfFlat + NumericChecker.check(index) +
+//                    NumericChecker.check(start) + NumericChecker.check(total));
+            resp.getWriter().write(us.findUserByParameter(name, surname, lastName, gdr,  year, month, day,
                     mS, citizenship, country, city, street, house, numOfFlat, NumericChecker.check(index),
                     NumericChecker.check(start), NumericChecker.check(total)));
-        } catch (ServiceException | ParseException e) {
+        } catch (ServiceException  e) {
             log.error(e);
             throw new ServiceException();
         }

@@ -1,18 +1,29 @@
 'use strict';
 
 var indexOfUpdatedPhone = [];
+var backAddPhone = document.querySelector('.backAddPhone');
+
+var countryCode = document.querySelector('#countryCode');
+var operatorCode = document.querySelector('#operatorCode');
+var number = document.querySelector('#number');
+
+var cancelButton = document.querySelector('.cancel');
+var confirmButton = document.querySelector('.confirm');
+var pickedPhone ;
+var phoneId ;
+var phoneIdAcclumulator = [];
+var modal = document.querySelector('.modalPhone');
+
+var countryCodeUpdatePhone = [];
+var operatorCodeUpdatedPhone = [] ;
+var numberUpdatedPhone = [] ;
+var type = [] ;
+var commentary = [];
 
 addPhone.addEventListener("click",function (evt) {
-    history.back();
-    history.pushState(null,null,'client/add/phone');
     hideAllTablesExceptUser();
-    var showAddPhoneForm = document.querySelector('#addPhon');
-    showAddPhoneForm.style.display = 'block';
-
-    var userEditForm = document.querySelector('#editUsr');
-    userEditForm.style.display = 'none';
-
-
+    showAddPhoneForm();
+    hideEditUserForm();
 });
 
 
@@ -31,7 +42,7 @@ document.forms.addPhone.onsubmit = function(e){
     var numberP = document.getElementsByName('number')[0];
 
 
-    if(isValidNumber(countryC,operatorC,numberP) ){
+    if(isValidNumber(countryC,operatorC,numberP) && isDigitsOnly(countryC,operatorC,numberP) && !isDuplicateForAddPhone(countryC,operatorC,numberP)){
 
         var options = {
             method : 'POST',
@@ -40,16 +51,12 @@ document.forms.addPhone.onsubmit = function(e){
             + number + '&type=' + type + '&commentary=' + commentary + '&idclient=' + userId
         };
 
-        fetch('',options).then(function (value) {
-            history.back();
-            history.pushState(null,null,'client/edit/user');
+        fetch('client/add/phone',options).then(function (value) {
             showAllTablesExceptUser();
             refreshAllTableByUserId(userId);
-            var showAddPhoneForm = document.querySelector('#addPhon');
-            showAddPhoneForm.style.display = 'none';
+            hideAddPhoneForm();
 
-            var userEditForm = document.querySelector('#editUsr');
-            userEditForm.style.display = 'block';
+            showEditUserForm();
 
             resetPhoneAddForm();
 
@@ -60,20 +67,22 @@ document.forms.addPhone.onsubmit = function(e){
             showError(res);
         }).catch(err => console.log(err));
 
+    }else if (isDuplicate(countryC,operatorC,numberP)) {
+        alert("Your number , can't duplicate");
+    }else if (!isDigitsOnly(countryC,operatorC,numberP)) {
+        alert("Your number , should contain only digits");
     }else {
-        alert("Your number , country code and operator code shouldn't be empty");
+        alert("Your number , country code and operator code shouldn't be empty or be too long");
     }
 };
 
-var backAddPhone = document.querySelector('.backAddPhone');
+
 backAddPhone.addEventListener("click",function (evt) {
-    history.back();
-    history.pushState(null,null,'client/edit/user');
     showAllTablesExceptUser();
-    userEditForm.style.display = 'block';
-    var showAddPhoneForm = document.querySelector('#addPhon');
-    showAddPhoneForm.style.display = 'none';
+    showEditUserForm();
+    hideAddPhoneForm();
 });
+
 //delete phone
 deletePhone.addEventListener("click",function (ev) {
 
@@ -91,17 +100,14 @@ deletePhone.addEventListener("click",function (ev) {
 
 
     if(values.length !== 0 ){
-        history.back();
+
         var options = {
             method : 'DELETE',
             headers : {'Content-Type' : 'application/x-www-form-urlencoded'}
         };
 
-        var req = new Request('client/delete/phone?id=' + values,options);
-        fetch(req).then(function (value) {
+        fetch('client/delete/phone?id=' + values,options).then(function (value) {
             refreshPhoneTable(userId);
-            history.forward();
-
             if (value.status === 500) {
                 return value.json();
             }
@@ -109,34 +115,11 @@ deletePhone.addEventListener("click",function (ev) {
             showError(res);
         }).catch(err => console.log(err));
     }else{
-        alert('You should choose only one phone');
+        alert('You should choose phone to delete');
     }
 });
 
-
 //edit phone
-
-var countryCode = document.querySelector('#countryCode');
-var operatorCode = document.querySelector('#operatorCode');
-var number = document.querySelector('#number');
-
-function isValidNumber(countryCode,operatorCode,number) {
-    return  0 < countryCode.value.length && countryCode.value.length < 4
-        && 0 < operatorCode.value.length && operatorCode.value.length < 5
-        && 0 < number.value.length && number.value.length < 8;
-}
-
-
-
-var cancelButton = document.querySelector('.cancel');
-var confirmButton = document.querySelector('.confirm');
-
-
-
-var pickedPhone ;
-var phoneId ;
-var phoneIdAcclumulator = [];
-var modal = document.querySelector('.modalPhone');
 
 function closeModal(){
     modal.style.display = 'none';
@@ -164,9 +147,6 @@ editPhone.addEventListener("click",function (ev) {
 
         phoneId = values;
         phoneIdAcclumulator.push(phoneId);
-        history.back();
-        history.pushState(null,null,'client/edit/phone');
-
 
         document.forms.update_phone.countryCode.value = document.getElementsByClassName('countryCode')[pickedPhone].innerHTML;
         document.forms.update_phone.operatorCode.value = document.getElementsByClassName('operatorCode')[pickedPhone].innerHTML;
@@ -182,31 +162,27 @@ editPhone.addEventListener("click",function (ev) {
 });
 
 cancelButton.addEventListener("click",function (evt) {
-    history.back();
-    history.pushState(null,null,'client/edit/user');
     closeModal();
 });
 
 confirmButton.addEventListener("click",function (evt) {
-    if(isValidNumber(countryCode,operatorCode,number)) {
+    if(isValidNumber(countryCode,operatorCode,number)  && isDigitsOnly(countryCode,operatorCode,number) &&  !isDuplicate(countryCode,operatorCode,number)) {
         document.getElementsByClassName('countryCode')[pickedPhone].innerHTML = document.forms.update_phone.countryCode.value;
         document.getElementsByClassName('operatorCode')[pickedPhone].innerHTML = document.forms.update_phone.operatorCode.value;
         document.getElementsByClassName('number')[pickedPhone].innerHTML = document.forms.update_phone.number.value;
         document.getElementsByClassName('phoneType')[pickedPhone].innerHTML = document.forms.update_phone.type.value;
         document.getElementsByClassName('phoneCommentary')[pickedPhone].innerHTML = document.forms.update_phone.commentary.value;
-        history.back();
-        history.pushState(null,null,'client/edit/user');
         closeModal();
+    }else if (isDuplicate(countryCode,operatorCode,number)) {
+        alert("Your number , can't duplicate");
+    }else if (!isDigitsOnly(countryCode,operatorCode,number)) {
+        alert("Your number , should contain only digits");
     }else{
-        alert("Your number shouldn't be empty");
+        alert("Your number shouldn't be empty or be too long");
     }
 });
 
-var countryCodeUpdatePhone = [];
-var operatorCodeUpdatedPhone = [] ;
-var numberUpdatedPhone = [] ;
-var type = [] ;
-var commentary = [];
+
 
 function savePhoneUpdate(index) {
      countryCodeUpdatePhone.push(document.getElementsByClassName('countryCode')[index].innerHTML) ;
@@ -238,13 +214,13 @@ function sendUpdatedPhone() {
         headers : {'Content-Type' : 'application/json; charset=utf-8;'},
         body : JSON.stringify(result)
     };
-    var request = new Request('',options);
-    fetch(request).then(function (value) {
+    fetch('client/edit/phone',options).then(function (value) {
         if (value.status === 500) {
             return value.json();
         }
     }).then(function(res) {
         showError(res);
+        pickedPhone = '';
     }).catch(err => console.log(err));
 }
 
@@ -260,3 +236,12 @@ function resetPhoneAddForm() {
     document.querySelector('#phoneAdd').reset();
 }
 
+
+function hideAddPhoneForm() {
+    var showAddPhoneForm = document.querySelector('#addPhon');
+    showAddPhoneForm.style.display = 'none';
+}
+function showAddPhoneForm() {
+    var showAddPhoneForm = document.querySelector('#addPhon');
+    showAddPhoneForm.style.display = 'block';
+}

@@ -1,68 +1,82 @@
-body{
-    overflow-x:hidden;
+body {
+    overflow-x: hidden;
 }
+
 textarea {
     resize: none;
 }
+
 #dataTable td a {
     color: cadetblue;
 }
-img{
+
+img {
     width: 320px;
     height: 220px;
     margin-bottom: 5%;
 }
-#editUsr{
+
+#editUsr {
     display: none;
 }
-.required{
+
+.required {
     font-size: 15px;
     color: darkred;
 }
-#recordsPerPage{
-    height:45px;
-    line-height:50px;
+
+#recordsPerPage {
+    height: 45px;
+    line-height: 50px;
 }
-#recordsPerPageS{
-    height:45px;
-    line-height:50px;
+
+#recordsPerPageS {
+    height: 45px;
+    line-height: 50px;
     display: none;
 }
-#search{
+
+#search {
     display: none;
 }
-#addPhon{
+
+#addPhon {
     display: none;
 }
-.addUsr{
+
+.addUsr {
     display: none;
 }
-.makeAttachment{
+
+.makeAttachment {
     display: none;
 }
+
 .container {
 
     margin-top: 5%;
     margin-right: 50%;
 }
 
-.buttons{
+.buttons {
     display: inline-block;
 }
-.container div{
+
+.container div {
     margin-bottom: 5%;
 }
-.update_phone{
+
+.update_phone {
     display: none;
 }
 
-#email{
+#email {
     display: none;
 }
 
 /*header*/
-.nav-container{
-    border-bottom:1px solid #9EC1D4;
+.nav-container {
+    border-bottom: 1px solid #9EC1D4;
 }
 
 .nav-container img {
@@ -71,25 +85,18 @@ img{
 
 }
 
-.name{
+.name {
     display: flex;
     align-items: center;
     margin-left: 15%;
     font-size: 90px;
 }
-.logo img{
-    width: 550px;
-    height: 120px;
+
+.logo img {
+    width: 450px;
+    height: 80px;
+    cursor: pointer;
 }
-
-
-/*User table*/
-#userInfo{
-
-}
-
-/*Attachment*/
-
 
 button {
     font: inherit;
@@ -120,21 +127,30 @@ button:active {
     background: white;
     box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
     padding: 1rem;
+    border-radius: 5px;
+}
+
+.modalAttachment > h1 {
+    text-align: center;
 }
 
 .modalPhone {
     display: none;
     position: fixed;
     z-index: 200;
-    top: 10%;
+    top: 5%;
     left: 30%;
     width: 40%;
     height: 80%;
     background: white;
+    border-radius: 5px;
     box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
     padding: 1rem;
 }
 
+.modalPhone > h1 {
+    text-align: center;
+}
 
 .modal h1 {
     color: #521751;
@@ -144,6 +160,7 @@ button:active {
 
 .modal-input {
     margin: 0.5rem 0;
+    height: 50%;
 }
 
 .modal-input textarea {
@@ -158,11 +175,6 @@ button:active {
     border-color: #521751;
 }
 
-.modal-actions {
-    text-align: right;
-}
-
-
 .backdrop {
     display: none;
     position: fixed;
@@ -174,4 +186,94 @@ button:active {
     z-index: 100;
 }
 
+/*add form*/
+.usrPhoto {
+    text-align: center;
+}
 
+/*main page btns*/
+.usrBtn {
+    margin-left: 35vw;
+}
+
+.addFormBtns {
+    margin-top: 3%;
+    margin-left: 45%;
+}
+
+.addFormBtns :nth-child(2) {
+    margin-left: 4%;
+}
+
+#search > h1 {
+    text-align: center;
+    margin-top: -10vh;
+    margin-bottom: 5vh;
+}
+
+.searchBtns {
+    margin-left: 45%;
+}
+
+.searchBtns :nth-child(2) {
+    margin-left: 4%;
+}
+
+/*send email form*/
+.searchForm {
+    margin-top: 0;
+    width: 40vw;
+    height: 50vh;
+    text-align: center;
+    margin-left: 30vw;
+}
+
+.sendEmailBtns :nth-child(2) {
+    margin-left: 5%;
+}
+
+.editUserBtn {
+    margin-left: 45vw;
+}
+
+.editUserBtn :nth-child(2) {
+    margin-left: 4%;
+}
+
+.attachmentBtns {
+    text-align: right;
+}
+
+.modalPhoneBtn {
+    margin-left: 12vw;
+}
+
+.modalPhoneBtn :nth-child(2) {
+    margin-left: 4%;
+}
+
+.modal-actions {
+    margin-left: 18vh;
+}
+
+.modal-actions :nth-child(2) {
+    margin-left: 4%;
+}
+
+.makeAttachment {
+    text-align: center;
+}
+
+.addAttachmentBtns :nth-child(2) {
+    margin-left: 4%;
+}
+
+#addPhon > h1 {
+    text-align: center;
+}
+.addPhoneBtn{
+    margin-left: 25vw;
+}
+.addPhoneBtn :nth-child(2){
+    margin-left: 4%;
+}

@@ -26,7 +26,7 @@ public class UpdateAttachmentCommand implements Command {
             log.debug( as.updateAttachment(attachments));
         } catch (ServiceException e) {
             log.error(e);
-            throw new ServiceException();
+            throw new ServiceException("Fail to update attachment : commentary should be less then 250");
         }
     }
 }

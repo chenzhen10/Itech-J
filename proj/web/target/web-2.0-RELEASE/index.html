@@ -5,13 +5,16 @@
     <title>Project</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"
             type="text/javascript"></script>
-    <script defer src="view/js/moment.js"> </script>
+    <script defer src="view/js/moment.js"></script>
     <script defer src="view/js/script.js"></script>
     <script defer src="view/js/attachment.js"></script>
     <script defer src="view/js/phone.js"></script>
     <script defer src="view/js/user.js"></script>
     <script defer src="view/js/email.js"></script>
     <script defer src="view/js/error.js"></script>
+    <script defer src="view/js/customCalendar.js"></script>
+    <script defer src="view/js/mainPage.js"></script>
+    <script defer src="view/js/validation.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
@@ -76,18 +79,22 @@
 <div class="nav-container">
     <header class="row">
         <h1 class="logo">
-            <img src="http://www.itechart.com/static/img/logo.png">
+            <a class="mainPage"><img src="http://www.itechart.com/static/img/logo.png"></a>
         </h1>
     </header>
 </div>
+<!--err msg-->
+<div id="errorMsg"></div>
 
 <div class="fluid-container">
     <!--user table-->
     <div class="userInfo">
-        <button id="addUser">Add user</button>
-        <button id="delete_user">Delete user</button>
-        <button id="sendEmail">Send email</button>
-        <button id="searchUser">Search user</button>
+        <div class="usrBtn">
+            <button id="addUser">Add user</button>
+            <button id="delete_user">Delete user</button>
+            <button id="sendEmail">Send email</button>
+            <button id="searchUser">Search user</button>
+        </div>
         <table class="table" border="2">
             <thead class="thead-dark">
             <tr>
@@ -119,11 +126,13 @@
     </div>
     <!--attachment table-->
     <div class="attachment">
-        <h1>Attachment</h1>
-        <button id="download">Download</button>
-        <button id="deleteAttachment">Delete</button>
-        <button id="addAttachment">Add</button>
-        <button id="editAttachment">Edit</button>
+        <div class="attachmentBtns">
+            <h1>Attachment</h1>
+            <button id="download">Download</button>
+            <button id="deleteAttachment">Delete</button>
+            <button id="addAttachment">Add</button>
+            <button id="editAttachment">Edit</button>
+        </div>
         <table class="table" border="2">
             <thead class="thead-dark">
             <tr>
@@ -159,37 +168,45 @@
 
     <!--add user-->
     <div class="addUsr">
-        <h1>New user</h1>
         <form class="usrAdd" name="add">
-            <div class="form-row mt-5">
-                <div class="col-md-4 mb-4">
+            <div class="usrPhoto">
+                <h1>New user</h1>
+                <p><input class="img" type="file"></p>
+                <img class="currentImage" src="client?command=showUserPhoto" alt="default">
+            </div>
+            <div class="form-row">
+                <div class="col-md-4">
                     <label for="validationCustom01">Name <span class="required"> *</span></label>
                     <input name="name" type="text" class="form-control" id="validationCustom01" placeholder="Name"
                            required>
-
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4">
                     <label for="validationCustom03">Surname <span class="required"> *</span></label>
                     <input name="surname" type="text" class="form-control" id="validationCustom02" placeholder="Surname"
                            required>
-
                 </div>
 
                 <div class="col-md-4">
                     <label for="validationCustom01">Patronymic </label>
                     <input name="lastName" type="text" class="form-control" id="validationCustom03"
                            placeholder="Patronymic">
-
                 </div>
             </div>
 
-            <div class="form-row mt-4">
-                <div class="col-md-4  mt-1">
-                    <label>Date </label>
-                    <input class="form-control" type="date" name="date">
+            <div class="form-row">
+                <div class="col-md-4">
+                   <span>Year  <select class="form-control year" name="year">
+                       <option selected="selected">Choose year</option>
+                   </select> </span>
+                    <span>Month  <select class="form-control month" name="month">
+                        <option selected="selected">Choose month</option>
+                   </select></span>
+                    <span>Day  <select class="form-control day" name="day">
+                        <option selected="selected">Choose day</option>
+                   </select> </span>
                 </div>
-                <div class="col-md-4 pb-4">
+                <div class="col-md-4">
                     <label>Gender </label>
                     <select class="custom-select my-1 mr-sm-2" name="gender">
                         <option selected="selected">Choose gender</option>
@@ -197,14 +214,14 @@
                         <option value="Female">Female</option>
                     </select>
                 </div>
-                <div class="col-md-4  mt-1">
+                <div class="col-md-4">
                     <label>Citizenship </label>
                     <input class="form-control" type="text" name="citizenship">
                 </div>
 
             </div>
 
-            <div class="form-row mt-5">
+            <div class="form-row mt-4">
                 <div class="col-md-3 ">
                     <label>Marital status </label>
                     <select class="custom-select my-1 mr-sm-2" name="maritalStatus">
@@ -228,7 +245,7 @@
 
             </div>
 
-            <div class="form-row mt-4">
+            <div class="form-row mt-2">
                 <div class="col-md-2">
                     <label>Country</label>
                     <input class="form-control" type="text" name="country">
@@ -254,46 +271,53 @@
                     <input class="form-control" type="number" name="index">
                 </div>
             </div>
-            <button type="submit">Add</button>
+            <div class="addFormBtns">
+                <button type="submit">Add</button>
+                <button style="display: inline-block" class="backUser">Back</button>
+            </div>
         </form>
-        <button class="backUser">Back</button>
+
     </div>
     <!--add phone-->
     <div id="addPhon">
         <h1>Add phone</h1>
         <form id="phoneAdd" name="addPhone">
-
-            <span>Country code : <input class="form-control" name="countryCode" type="number"> </span><br>
-            <span>Operator code : <input class="form-control" name="operatorCode" type="number"> </span><br>
-            <span>Number : <input class="form-control" name="number" type="number"> </span><br>
-            <select  name="type">
-                <option value="Mobile">Mobile</option>
-                <option value="Home">Home</option>
-            </select>
-            <p>Commentary : </p><span><textarea class="form-control" maxlength="250" rows="10" cols="45"
-                                                name="commentary"> </textarea></span>
-            <br>
-            <button>Add</button>
+            <div class="col-md-8 offset-md-2 mb-4">
+                <span>Country code : <input class="form-control" name="countryCode" type="number"> </span><br>
+                <span>Operator code : <input class="form-control" name="operatorCode" type="number"> </span><br>
+                <span>Number : <input class="form-control" name="number" type="number"> </span><br>
+                <select name="type">
+                    <option value="Mobile">Mobile</option>
+                    <option value="Home">Home</option>
+                </select>
+                <p>Commentary : </p><span><textarea class="form-control" maxlength="250" rows="10" cols="45"
+                                                    name="commentary"> </textarea></span>
+                <div class="addPhoneBtn">
+                    <button>Add</button>
+                    <button class="backAddPhone">Back</button>
+                </div>
+            </div>
         </form>
-        <button class="backAddPhone">Back</button>
+
     </div>
-    <br>
-    <br>
-    <br>
-    <br>
+
     <!--make attachment-->
     <div class="makeAttachment">
         <h1>Attach file</h1>
         <form enctype="multipart/form-data" id="form">
-            <div class="col-md-6 mb-4">
-                <span>File :  <input id="file" type='file' name='upload'></span><br>
-                <span>File name : <input class="form-control" id="fName" name="name" type="text" required></span><br><br><br>
-                <p>Commentary :</p> <span><textarea class="form-control" maxlength="250" id="comment" name="comment" rows="10"
+            <div class="col-md-8 offset-md-2 mb-4">
+                <span><input id="file" type='file' name='upload'></span><br>
+                <span>File name : <input class="form-control" id="fName" name="name" type="text"
+                                         required></span><br><br><br>
+                <p>Commentary :</p> <span><textarea class="form-control" maxlength="250" id="comment" name="comment"
+                                                    rows="10"
                                                     cols="45"></textarea> </span>
             </div>
-            <button id="attachment">Attach</button>
+            <div class="addAttachmentBtns">
+                <button id="attachment">Attach</button>
+                <button class="backAttachment">Back</button>
+            </div>
         </form>
-        <button class="backAttachment">Back</button>
     </div>
 
 
@@ -305,8 +329,9 @@
         <div class="modal-input">
             <form name="update_phone">
                 <span>Country code : <input class="form-control" id="countryCode" name="countryCode"
-                                              type="number"></span><br>
-                <span>Operator code : <input class="form-control" id="operatorCode" name="operatorCode" type="number"></span><br>
+                                            type="number"></span><br>
+                <span>Operator code : <input class="form-control" id="operatorCode" name="operatorCode"
+                                             type="number"></span><br>
                 <span>Number :  <input class="form-control" id="number" name="number" type="number"></span><br>
                 <span>Type :  <select name="type">
                     <option value="Mobile">Mobile</option>
@@ -315,11 +340,13 @@
                 <span>Commentary :  <textarea class="form-control" maxlength="250" rows="10" cols="45"
                                               name="commentary"> </textarea></span>
             </form>
+            <div class="modalPhoneBtn">
+                <button class="cancel">Cancel</button>
+                <button class="confirm">Confirm</button>
+            </div>
+
         </div>
-        <div class="modal-actions">
-            <button class="cancel">Cancel</button>
-            <button class="confirm">Confirm</button>
-        </div>
+
     </div>
 
     <div class="modalAttachment">
@@ -331,29 +358,29 @@
                 <span>Commentary : <textarea class="form-control" maxlength="250" rows="10" cols="45"
                                              name="commentary"> </textarea></span>
             </form>
-        </div>
-        <div class="modal-actions">
-            <button class="cancelAttachment">Cancel</button>
-            <button class="confirmAttachment">Confirm</button>
+            <div class="modal-actions">
+                <button class="cancelAttachment">Cancel</button>
+                <button class="confirmAttachment">Confirm</button>
+            </div>
         </div>
     </div>
 
     <div id="editUsr">
-        <h1>Edit user</h1>
         <form id="usrEdit" enctype="multipart/form-data" name="edit">
-            <p>Update photo <input id="img" type="file"></p>
-            <img id="currentImage" src="client?command=showUserPhoto" alt="default">
+            <div class="usrPhoto">
+                <h1>Edit user</h1>
+                <p>Update photo <input class="img" type="file"></p>
+                <img class="currentImage" src="client?command=showUserPhoto" alt="default">
+            </div>
             <div class="form-row">
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4">
                     <label>Name <span class="required"> *</span></label>
                     <input name="name" type="text" class="form-control" placeholder="Name" required>
-
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4">
                     <label>Surname <span class="required"> *</span></label>
                     <input name="surname" type="text" class="form-control" placeholder="Surname" required>
-
                 </div>
 
                 <div class="col-md-4">
@@ -363,12 +390,20 @@
                 </div>
             </div>
 
-            <div class="form-row mt-4">
-                <div class="col-md-4  mt-1">
-                    <label>Date </label>
-                    <input class="form-control" type="date" name="date">
+            <div class="form-row">
+                <div class="col-md-4">
+                    <label>Date</label>
+                    <span>Year  <select class="form-control year" name="year">
+                       <option selected="selected">Choose year</option>
+                   </select> </span>
+                    <span>Month  <select class="form-control month" name="month">
+                        <option selected="selected">Choose month</option>
+                   </select></span>
+                    <span>Day  <select class="form-control day" name="day">
+                        <option selected="selected">Choose day</option>
+                   </select> </span>
                 </div>
-                <div class="col-md-4 pb-4">
+                <div class="col-md-4">
                     <label>Gender </label>
                     <select class="custom-select my-1 mr-sm-2" name="gender">
                         <option selected="selected">Choose gender</option>
@@ -376,15 +411,15 @@
                         <option value="Female">Female</option>
                     </select>
                 </div>
-                <div class="col-md-4  mt-1">
+                <div class="col-md-4">
                     <label>Citizenship </label>
                     <input class="form-control" type="text" name="citizenship">
                 </div>
 
             </div>
 
-            <div class="form-row mt-5">
-                <div class="col-md-3 ">
+            <div class="form-row">
+                <div class="col-md-3">
                     <label>Marital status </label>
                     <select class="custom-select my-1 mr-sm-2" name="maritalStatus">
                         <option>Choose marital status</option>
@@ -392,15 +427,15 @@
                         <option value="Married">Married</option>
                     </select>
                 </div>
-                <div class="col-md-3 mt-1">
+                <div class="col-md-3">
                     <label>Web site </label>
                     <input class="form-control" type="text" name="webSite">
                 </div>
-                <div class="col-md-3  mt-1">
+                <div class="col-md-3">
                     <label>Email </label>
                     <input class="form-control" type="email" name="email">
                 </div>
-                <div class="col-md-3  mt-1">
+                <div class="col-md-3">
                     <label>Workplace </label>
                     <input class="form-control" type="text" name="workplace">
                 </div>
@@ -434,19 +469,21 @@
                 </div>
             </div>
         </form>
-        <button id="userEdit">Save</button>
-        <button class="backEditUser">Back</button>
+        <div class="editUserBtn">
+            <button id="userEdit">Save</button>
+            <button class="backEditUser">Back</button>
+        </div>
     </div>
 
     <div id="search">
         <form id="userSearch" name="search">
             <div class="form-row">
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4">
                     <label>Name </label>
                     <input name="name" type="text" class="form-control" placeholder="Name">
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4">
                     <label>Surname </label>
                     <input name="surname" type="text" class="form-control" placeholder="Surname">
                 </div>
@@ -457,10 +494,17 @@
                 </div>
             </div>
 
-            <div class="form-row mt-4">
+            <div class="form-row">
                 <div class="col-md-3  mt-1">
-                    <label>Date </label>
-                    <input class="form-control" type="date" name="date">
+                    <span>Year  <select class="form-control year" name="year">
+                       <option selected="selected">Choose year</option>
+                   </select> </span>
+                    <span>Month  <select class="form-control month" name="month">
+                        <option selected="selected">Choose month</option>
+                   </select></span>
+                    <span>Day  <select class="form-control day" name="day">
+                        <option selected="selected">Choose day</option>
+                   </select> </span>
                 </div>
                 <div class="col-md-3 pb-4">
                     <label>Gender </label>
@@ -484,8 +528,6 @@
                 </div>
 
             </div>
-
-
 
             <div class="form-row mb-4">
                 <div class="col-md-2">
@@ -514,35 +556,38 @@
                 </div>
             </div>
         </form>
-        <button id="searchUsr">Search</button>
-        <button style="display: inline-block" id="back">Back</button>
+        <div class="searchBtns">
+            <button id="searchUsr">Search</button>
+            <button style="display: inline-block" id="back">Back</button>
+        </div>
     </div>
 
-    <div class="text-center" id="email">
+    <div class="searchForm" id="email">
         <h1>Send email</h1>
         <p>Placeholder <strong>with <> brackets</strong> will be changed </p>
         <form id="emailForm">
+            <div class="center">
+                <p>To </p>
+                <input class="form-control  col-md-12 " name="receivers" type="text" readonly>
 
-            <p>To </p>
-            <input name="receivers" type="text" readonly>
+                <p>Topic</p>
+                <input class="form-control  col-md-12 " name="topic" type="text">
 
-            <p>Topic</p>
-            <input name="topic" type="text">
+                <p>Template</p>
+                <select class="form-control col-md-12 " name="template" id="messageTemplate"></select>
 
-            <p>Template</p>
-            <select name="template" id="messageTemplate"></select>
-
-            <p>Text </p>
-            <span><textarea name="message" id="message" cols="30"
-                            rows="10" maxlength="240"></textarea></span>
-
+                <p>Text </p>
+                <span><textarea class="form-control" name="message" id="message" cols="30"
+                                rows="10" maxlength="240"></textarea></span>
+            </div>
         </form>
-        <button id="send">Send</button>
-        <button id="searchBack">Back</button>
+        <div class="sendEmailBtns">
+            <button id="send">Send</button>
+            <button id="searchBack">Back</button>
+        </div>
     </div>
 </div>
 
-<div id="errorMsg"></div>
 
 </body>
 </html>

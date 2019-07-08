@@ -138,4 +138,17 @@ public class PhoneServiceImpl implements PhoneService {
             throw new ServiceException("Data is empty");
         }
     }
+
+    @Override
+    public boolean findDuplicatePhone(Integer countryCode,Integer operatorCode,Integer number) throws ServiceException {
+        boolean res = false;
+        PhoneDao phoneDao = provider.getPhoneDao();
+        try {
+            res = phoneDao.findDuplicatePhone(countryCode,operatorCode,number);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+        return res;
+    }
+
 }

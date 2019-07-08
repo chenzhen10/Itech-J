@@ -6,10 +6,7 @@ import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.service.ServiceProvider;
 import by.itech.kimbar.service.exception.ServiceException;
 import by.itech.kimbar.service.user.UserService;
-import by.itech.kimbar.util.DateConverter;
-import by.itech.kimbar.util.DirectoryCreator;
-import by.itech.kimbar.util.NumericChecker;
-import by.itech.kimbar.util.PathPropertyReader;
+import by.itech.kimbar.util.*;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -39,7 +36,7 @@ public class UpdateUserCommand implements Command {
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
         UserService us = ServiceProvider.getInstance().getUserService();
 
-        List<String> list = extractDataFromBody(req);
+        List<String> list = RequestBodyReader.extractDataFromBody(req);
 
         String userId = null;
         String path = null;
@@ -59,12 +56,13 @@ public class UpdateUserCommand implements Command {
         String numOfFlat = null;
         String index = null;
         String workplace = null;
+        String extension = null;
 
-        //with pictures 18 without 17
-        if (list.size() == 17) {
+        //with pictures 19 without 18
+        if (list.size() == 18) {
             userId = list.get(0);
             //replace with normal impl
-            path = PathPropertyReader.readPhotoPath() + File.separator + list.get(0) + File.separator + list.get(0) + ".jpg";
+            path = PathPropertyReader.readPhotoPath() + File.separator + list.get(0) + File.separator + list.get(0) +  "." + list.get(17);
             name = list.get(1);
             surname = list.get(2);
             lastName = list.get(3);
@@ -105,89 +103,32 @@ public class UpdateUserCommand implements Command {
 
         //exctract in method
         Gender gdr = null;
-        if (gender.equals("Male") || gender.equals("Female")){
+        if (gender.equals("Male") || gender.equals("Female")) {
             gdr = Gender.valueOf(gender);
         }
 
         MaritalStatus ms = null;
-        if (maritalStatus.equals(MaritalStatus.Married.toString()) || maritalStatus.equals(MaritalStatus.Single.toString())){
+        if (maritalStatus.equals(MaritalStatus.Married.toString()) || maritalStatus.equals(MaritalStatus.Single.toString())) {
             ms = MaritalStatus.valueOf(maritalStatus);
         }
 
 
         try {
-            log.debug("Parameters : " +  name+ surname+lastName+DateConverter.convert(date)+gdr+
-                    citizenship+ms+ webSite+ email+ workplace+
-                    country+city+street+
-                    house+numOfFlat+NumericChecker.check(index)+
-                    path+ NumericChecker.check(userId) );
+            log.debug("Parameters : " + name + surname + lastName + DateConverter.convert(date) + gdr +
+                    citizenship + ms + webSite + email + workplace +
+                    country + city + street +
+                    house + numOfFlat + NumericChecker.check(index) +
+                    path + NumericChecker.check(userId));
 
-           log.debug(us.updateUser(name, surname,lastName,DateConverter.convert(date),gdr,
-                    citizenship,ms, webSite, email, workplace,
-                    country,city,street,
-                    house,numOfFlat,NumericChecker.check(index),
+            log.debug(us.updateUser(name, surname, lastName, DateConverter.convert(date), gdr,
+                    citizenship, ms, webSite, email, workplace,
+                    country, city, street,
+                    house, numOfFlat, NumericChecker.check(index),
                     path, NumericChecker.check(userId)));
         } catch (ServiceException | ParseException e) {
             log.error(e);
-            throw new ServiceException();
+            throw new ServiceException("Data which you inputted too long try to trim it as much as it possible");
         }
     }
 
-    private static List<String> extractDataFromBody(HttpServletRequest req) {
-        List<String> result = new ArrayList<>();
-        String named;
-
-        StringBuilder rName = new StringBuilder();
-        String[] fileExtension;
-        String ext;
-        String path = null;
-
-        if (ServletFileUpload.isMultipartContent(req)) {
-            try {
-                List<FileItem> multi = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(req);
-
-                String usrId = multi.get(17).getString();
-
-                result.add(usrId);
-
-                for (FileItem item : multi) {
-                    // false  represents an uploaded file
-                    if (!item.isFormField()) {
-                        named = item.getName();
-                        fileExtension = named.split("\\.");
-
-                        //if file wasn't added 17 size if added 18
-                        result.add(String.valueOf(rName.append(usrId + ".").append(fileExtension[fileExtension.length - 1])));
-                        ext = "." + fileExtension[fileExtension.length - 1];
-
-                        if (!result.get(1).equals("undefined")) {
-                            FileUtils.deleteDirectory(new File(PathPropertyReader.readPhotoPath() + File.separator + usrId));
-                            DirectoryCreator.createPhotoSubFolderForUser(usrId);
-                            path = PathPropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + ext;
-                            item.write(new File(path));
-                        }
-                    }
-                }
-                result.add(multi.get(1).getString( "UTF-8" ));
-                result.add(multi.get(2).getString( "UTF-8" ) );
-                result.add(multi.get(3).getString( "UTF-8" ) );
-                result.add(multi.get(4).getString( "UTF-8" ) );
-                result.add(multi.get(5).getString( "UTF-8" ) );
-                result.add(multi.get(6).getString( "UTF-8" ) );
-                result.add(multi.get(7).getString( "UTF-8" ) );
-                result.add(multi.get(8).getString( "UTF-8" ) );
-                result.add(multi.get(9).getString( "UTF-8" ) );
-                result.add(multi.get(10).getString( "UTF-8" ) );
-                result.add(multi.get(11).getString( "UTF-8" ) );
-                result.add(multi.get(12).getString( "UTF-8" ) );
-                result.add(multi.get(13).getString( "UTF-8" ) );
-                result.add(multi.get(14).getString( "UTF-8" ) );
-                result.add(multi.get(15).getString( "UTF-8" ) );
-                result.add(multi.get(16).getString( "UTF-8" ) );
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-        return result;
-    }
 }

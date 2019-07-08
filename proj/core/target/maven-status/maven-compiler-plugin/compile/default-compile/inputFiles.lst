@@ -22,6 +22,7 @@ F:\proj\core\src\main\java\by\itech\kimbar\dao\user\UserDao.java
 F:\proj\core\src\main\java\by\itech\kimbar\service\phone\impl\PhoneServiceImpl.java
 F:\proj\core\src\main\java\by\itech\kimbar\util\DirectoryCreator.java
 F:\proj\core\src\main\java\by\itech\kimbar\entity\User.java
+F:\proj\core\src\main\java\by\itech\kimbar\util\RequestBodyReader.java
 F:\proj\core\src\main\java\by\itech\kimbar\dto\Dto.java
 F:\proj\core\src\main\java\by\itech\kimbar\entity\Address.java
 F:\proj\core\src\main\java\by\itech\kimbar\service\attachment\impl\AttachmentServiceImpl.java

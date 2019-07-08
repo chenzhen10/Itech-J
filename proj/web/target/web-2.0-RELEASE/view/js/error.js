@@ -10,6 +10,6 @@ function showError(res) {
         context.appendChild(elem);
         setTimeout(function () {
             context.innerHTML = ''
-        }, 3000);
+        }, 10000);
     }
 }

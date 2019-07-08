@@ -31,14 +31,21 @@ public class AddPhoneCommand implements Command {
         int realId = Integer.parseInt(idclient);
 
         try {
-            log.debug("Parameters : " + NumericChecker.check(countryCode) + NumericChecker.check(operatorCode)
-                    + NumericChecker.check(number) + Phone.Type.valueOf(type) + commentary + realId);
+            boolean isDuplicate = ps.findDuplicatePhone(NumericChecker.check(countryCode), NumericChecker.check(operatorCode)
+                    , NumericChecker.check(number));
+            if(!isDuplicate) {
+                log.debug("Parameters : " + NumericChecker.check(countryCode) + NumericChecker.check(operatorCode)
+                        + NumericChecker.check(number) + Phone.Type.valueOf(type) + commentary + realId);
 
-            log.debug(ps.createPhone(NumericChecker.check(countryCode), NumericChecker.check(operatorCode)
-                    , NumericChecker.check(number), Phone.Type.valueOf(type), commentary, realId));
+
+                log.debug(ps.createPhone(NumericChecker.check(countryCode), NumericChecker.check(operatorCode)
+                        , NumericChecker.check(number), Phone.Type.valueOf(type), commentary, realId));
+            }else {
+                throw new ServiceException();
+            }
         } catch (ServiceException e) {
             log.error(e);
-            throw new ServiceException();
+            throw new ServiceException("Duplicate phone can't be added");
         }
 
     }

@@ -19,6 +19,10 @@ var searchUsrButton = document.querySelector('#searchUsr');
 
 var back = document.querySelector('#back');
 
+//user count
+var countOfUsers = 0;
+var backdrop = document.querySelector('.backdrop');
+
 function loadData(url) {
     return fetch(url).then(res => res.json()).catch(err => console.log(err));
 }
@@ -31,18 +35,18 @@ function render(data,templ,table) {
     });
 }
 
-var backdrop = document.querySelector('.backdrop');
+
 
 function refreshUserTable(start,total) {
-    fetchCountOFUser();
     var userTable = document.querySelector('#dataTable');
     userTable.innerHTML = '';
-    loadData('client?command=pagination&page=' + start + '&total=' + total).then(res => render(res,'users','dataTable')
-    ).then(function () {
-       return fetchCountOFUser();
+
+    fetch('client?command=countOfUsers').then(res => res.json()).then(function (data) {
+       return countOfUsers =   data;
     }).then(function (value) {
-        startLinks();
+        startLinks(value);
     }).catch(err => console.log(err));
+
 }
 function refreshPhoneTable(userId) {
     var phoneTable = document.querySelector('#phoneTable');
@@ -74,7 +78,7 @@ function hideAllTablesExceptUser() {
     var phone = document.querySelector('.phone');
     attachment.style.display = 'none';
     phone.style.display = 'none';
-    userTable.style.display = '';
+    userTable.style.display = 'table-row-group';
 }
 
 function hideUserTable() {
@@ -106,24 +110,6 @@ function showAllTablesExceptUser(){
     user.style.display = 'none';
 }
 
-
-history.replaceState(null,null,"client");
-refreshUserTable(0,5);
-hideAllTablesExceptUser();
-
-
-
-//user count
-var countOfUsers = 0;
-
-function fetchCountOFUser() {
-    fetch('client?command=countOfUsers').then(res => res.json()).then(function (data) {
-        countOfUsers = data;
-    })
-.catch(err => console.log(err));
-
-    return countOfUsers;
-}
 
 //pagination
 countOfUserPerPage.addEventListener("change",function () {
@@ -181,8 +167,6 @@ function linkRender() {
                         currentPage = this.innerHTML;
                     }
                 }
-                history.pushState(null, null, 'client?command=pagination' + '&page=' + this.innerHTML
-                    + '&total=' + countOfRecordsPerPage);
 
                 loadData('client?command=pagination'  + '&page=' + currentUsers +
                     '&total=' + countOfRecordsPerPage).then(res => render(res, 'users', 'dataTable'))
@@ -198,7 +182,7 @@ function linkRender() {
 
 //pre check photo
 function toDataURL(input){
-    var img = document.querySelector('#currentImage');
+    var img = document.querySelector('.currentImage');
     if (input.files && input.files[0]) {
         var fr = new FileReader();
 
@@ -209,14 +193,25 @@ function toDataURL(input){
     }
 }
 
-function startLinks() {
+function toDataURLForUserEdit(input){
+    var img = document.querySelectorAll('.currentImage')[1];
+    if (input.files && input.files[0]) {
+        var fr = new FileReader();
+        fr.onload = function(e){
+            img.src = e.target.result;
+        };
+        fr.readAsDataURL(input.files[0]);
+    }
+}
+
+function startLinks(count) {
     //render links
     var countOfRecordsPerPage = 5;
     var userDiv = document.querySelector('.buttons');
     var userTable = document.querySelector('#dataTable');
     userTable.innerHTML = '';
 
-    var countOfRecords = countOfUsers;
+    var countOfRecords = count;
 
     var currentUsers = 0;
 
@@ -257,7 +252,7 @@ function startLinks() {
                         currentPage = this.innerHTML;
                     }
                 }
-                history.pushState(null, null, 'client?command=pagination' + '&page=' + this.innerHTML + '&total=' + countOfRecordsPerPage);
+
 
                 loadData('client?command=pagination'  + '&page=' + currentUsers +
                     '&total=' + countOfRecordsPerPage).then(res => render(res, 'users', 'dataTable'))
@@ -271,7 +266,7 @@ function startLinks() {
 }
 
 
-function paginationForSearch(usersCount,name,surname,lastName,date,gender,citizenship,maritalStatus,country,city,street,house,numOfFlat,index) {
+function paginationForSearch(usersCount,name,surname,lastName,yearF,monthF,dayF,gender,citizenship,maritalStatus,country,city,street,house,numOfFlat,index) {
     var countOfRecordsPerPageS = countOfUserPerPageS.value;
     var userDiv = document.querySelector('.buttons');
     var userTable = document.querySelector('#dataTable');
@@ -285,7 +280,7 @@ function paginationForSearch(usersCount,name,surname,lastName,date,gender,citize
 
     var pages = Math.ceil( countOfRecords / countOfRecordsPerPageS );
 
-    loadData('client?command=findUser&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&date=' + date
+    loadData('client?command=findUser&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&year=' + yearF + '&month=' + monthF + '&day=' + dayF
         + '&gender=' + gender + '&citizenship=' + citizenship + '&maritalStatus=' + maritalStatus + '&country=' + country
         + '&city=' + city + '&street=' + street + '&house=' + house  + '&numOfFlat=' + numOfFlat + '&index=' + index
         + '&start=' + currentUsers  + '&total=' +  countOfRecordsPerPageS).
@@ -294,7 +289,6 @@ function paginationForSearch(usersCount,name,surname,lastName,date,gender,citize
     userDiv.innerHTML = '';
 
     if (countOfRecords > countOfRecordsPerPageS) {
-        console.log(countOfRecordsPerPageS);
         for (var i = 1; i <= pages; i++) {
             var a = document.createElement('button');
             a.setAttribute('class', 'userLink' );
@@ -320,9 +314,8 @@ function paginationForSearch(usersCount,name,surname,lastName,date,gender,citize
                         currentPage = this.innerHTML;
                     }
                 }
-                history.pushState(null, null, 'client?command=pagination' + '&page=' + this.innerHTML + '&total=' + countOfRecordsPerPageS);
 
-                loadData('client?command=findUser&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&date=' + date
+                loadData('client?command=findUser&name=' + name + '&surname=' + surname + '&lastName='+ lastName + '&year=' + yearF + '&month=' + monthF + '&day=' + dayF
                     + '&gender=' + gender + '&citizenship=' + citizenship + '&maritalStatus=' + maritalStatus + '&country=' + country
                     + '&city=' + city + '&street=' + street + '&house=' + house  + '&numOfFlat=' + numOfFlat + '&index=' + index
                     + '&start=' + currentUsers  + '&total=' +  countOfRecordsPerPageS).
@@ -334,3 +327,7 @@ function paginationForSearch(usersCount,name,surname,lastName,date,gender,citize
         }
     }
 }
+
+history.replaceState(null,null,"client");
+refreshUserTable(0,5);
+hideAllTablesExceptUser();

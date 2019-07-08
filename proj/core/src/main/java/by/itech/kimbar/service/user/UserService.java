@@ -22,15 +22,18 @@ public interface UserService {
 
     boolean createUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
                        MaritalStatus maritalStatus, String webSite, String email, String workplace,
-                       String country, String city, String street, String house, String numOfFlat, Integer index) throws ServiceException;
+                       String country, String city, String street, String house, String numOfFlat, Integer index,String photoPath,String img) throws ServiceException;
 
-    String findUserByParameter(String name, String surname, String lastName, Gender gender, Date startDate,
+    String findUserByParameter(String name, String surname, String lastName, Gender gender, String year,String month,String day,
                                    MaritalStatus maritalStatus, String citizenship, String country, String city, String street,
                                    String house, String numOfHouse, Integer index,Integer start, Integer total) throws ServiceException;
 
-    String countUserByParameter(String name, String surname, String lastName, Gender gender, Date date,
+    String countUserByParameter(String name, String surname, String lastName, Gender gender, String year,String month,String day,
                                 MaritalStatus maritalStatus, String citizenship, String country, String city, String street,
                                 String house, String numOfHouse, Integer index) throws ServiceException;
 
     List<User> birthdayMen() throws ServiceException;
+
+
+    int extractNextUserId() throws ServiceException;
 }

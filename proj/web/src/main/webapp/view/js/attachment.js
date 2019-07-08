@@ -3,13 +3,25 @@
 var indexOfUpdatedAttachment = [];
 var nameLengthChecker;
 
+var editAttachment = document.querySelector('#editAttachment');
+var modalAttachment = document.querySelector('.modalAttachment');
+var pickedAttachment ;
+var attachmentId;
+var attachmentIdAccumulator = [];
+
+var cancelBtn = document.querySelector('.cancelAttachment');
+var confirmBtn = document.querySelector('.confirmAttachment');
+
+
+var attachmentName = [];
+var attachmentCommentary = [];
+var attachmentID = [];
+
+
 addAttachment.addEventListener("click",function (evt) {
-    history.back();
     hideAllTablesExceptUser();
-    history.pushState(null,null,'client/add/attachment');
-    var attachmentForm = document.querySelector('.makeAttachment');
-    attachmentForm.style.display = 'block';
-    userEditForm.style.display = 'none';
+    showAttachmentForm();
+    hideEditUserForm();
 });
 
 //attachment
@@ -35,19 +47,15 @@ attach.addEventListener("click",function (ev) {
         };
 
 
-        fetch('',options).then(function(value) {
-            history.back();
-            history.pushState(null,null,'client/edit/user');
-            var attachmentForm = document.querySelector('.makeAttachment');
-            attachmentForm.style.display = 'none';
+        fetch('client/add/attachment',options).then(function(value) {
+            hideAttachmentForm();
 
             resetAttachmentAddForm();
 
             showAllTablesExceptUser();
             refreshAllTableByUserId(userId);
 
-            var userEditForm = document.querySelector('#editUsr');
-            userEditForm.style.display = 'block';
+            showEditUserForm();
 
             if (value.status === 500) {
                 return value.json();
@@ -55,8 +63,9 @@ attach.addEventListener("click",function (ev) {
         }).then(function(res) {
             showError(res);
         }).catch(err => console.log(err));
-    }
-    else{
+    }else if(!isValidAttachment(fileName)){
+        alert('Your name should be less then 20 and ot be empty');
+    }else{
         alert("You should choose 1 file and name should be not empty");
     }
 
@@ -64,14 +73,10 @@ attach.addEventListener("click",function (ev) {
 
 var attachmentsBack = document.querySelector(".backAttachment");
 attachmentsBack.addEventListener("click",function (evt) {
-    history.back();
-    history.pushState(null,null,'client/edit/user');
     refreshUserTable(0,5);
     showAllTablesExceptUser();
-    var attachmentForm = document.querySelector('.makeAttachment');
-    attachmentForm.style.display = 'none';
-    userEditForm.style.display = 'block';
-
+    hideAttachmentForm();
+    showEditUserForm();
 });
 
 //download
@@ -96,7 +101,7 @@ downloadAttachment.addEventListener("click",function(ev) {
 
 
     if (values.length === 1){
-        //file name which we see
+        //file name which we will see
         var fileL = path[count].innerHTML.split("\\").length;
         var fileExt = path[count].innerHTML.split("\\")[fileL-1].split('.')[1];
         var fileName = path[count].innerHTML.split("\\")[fileL-1].split('.')[0];
@@ -137,21 +142,14 @@ deleteAttachment.addEventListener("click",function (ev) {
     });
 
     if(values.length !== 0){
-
-        history.back();
-
-        var uri = 'client/delete/attachment?&id=' + values + '&fName=' + names  ;
-
         var options = {
             method : 'DELETE',
             headers : {'Content-Type' : 'application/x-www-form-urlencoded'},
             body : path
         };
-        var req = new Request(uri,options);
 
-        fetch(req).then(function (value) {
+        fetch('client/delete/attachment?&id=' + values + '&fName=' + names ,options).then(function (value) {
            refreshAttachmentTable(userId);
-           history.forward();
             if (value.status === 500) {
                 return value.json();
             }
@@ -164,11 +162,7 @@ deleteAttachment.addEventListener("click",function (ev) {
 });
 
 //edit attachment
-var editAttachment = document.querySelector('#editAttachment');
-var modalAttachment = document.querySelector('.modalAttachment');
-var pickedAttachment ;
-var attachmentId;
-var attachmentIdAccumulator = [];
+
 editAttachment.addEventListener("click",function (ev) {
 
     var checkboxes = document.getElementsByName("files");
@@ -187,11 +181,8 @@ editAttachment.addEventListener("click",function (ev) {
     });
 
     if(values.length === 1 ){
-        history.back();
         attachmentId = values;
         attachmentIdAccumulator.push(attachmentId);
-        history.pushState(null,null,'client/edit/attachment');
-
 
         document.forms.update_attachment.attachmentName.value = document.getElementsByClassName('filName')[pickedAttachment].innerHTML;
         document.forms.update_attachment.commentary.value = document.getElementsByClassName('attachmentComment')[pickedAttachment].innerHTML;
@@ -203,8 +194,6 @@ editAttachment.addEventListener("click",function (ev) {
     }
 });
 
-var cancelBtn = document.querySelector('.cancelAttachment');
-var confirmBtn = document.querySelector('.confirmAttachment');
 
 function closeModalAttachment(){
     modalAttachment.style.display = 'none';
@@ -212,15 +201,9 @@ function closeModalAttachment(){
 }
 
 cancelBtn.addEventListener("click",function (evt) {
-    history.back();
-    history.pushState(null,null,'client/edit/user');
     closeModalAttachment();
 });
 
-
-function isValidName(name){
-    return name.length > 0 && name.length < 40 ;
-}
 
 
 confirmBtn.addEventListener("click",function () {
@@ -230,18 +213,13 @@ confirmBtn.addEventListener("click",function () {
             document.getElementsByClassName('attachmentComment')[pickedAttachment].innerHTML
                 = document.forms.update_attachment.commentary.value;
     if (isValidName(nameLengthChecker)) {
-            history.back();
-            history.pushState(null, null, 'client/edit/user');
             closeModalAttachment();
             nameLengthChecker = '';
         }else {
-            alert('Name should be less then 40 and more then 0');
+            alert('Name should be less then 20 and more then 0');
         }
 });
 
-var attachmentName = [];
-var attachmentCommentary = [];
-var attachmentID = [];
 
 function saveAttachmentUpdate(index) {
     attachmentName.push(document.getElementsByClassName('filName')[index].innerHTML);
@@ -266,13 +244,13 @@ function sendUpdatedAttachment() {
         body : JSON.stringify(result)
     };
 
-    var request = new Request('',options);
-    fetch(request).then(function (value) {
+    fetch('client/edit/attachment',options).then(function (value) {
         if (value.status === 500) {
             return value.json();
         }
     }).then(function(res) {
         showError(res);
+        pickedAttachment = '';
     }).catch(err => console.log(err));;
 }
 
@@ -286,6 +264,12 @@ function resetAttachmentAddForm() {
  document.querySelector('#form').reset();
 }
 
-function isValidAttachment(name) {
-    return name.value.length > 0 && name.value.length < 20;
+function showAttachmentForm() {
+    var attachmentForm = document.querySelector('.makeAttachment');
+    attachmentForm.style.display = 'block';
+}
+
+function hideAttachmentForm() {
+    var attachmentForm = document.querySelector('.makeAttachment');
+    attachmentForm.style.display = 'none';
 }

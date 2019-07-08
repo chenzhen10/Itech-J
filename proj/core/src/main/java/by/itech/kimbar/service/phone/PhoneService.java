@@ -14,4 +14,6 @@ public interface PhoneService {
                         Integer idClient ) throws  ServiceException;
 
     boolean updatePhone(List<Dto> phones) throws  ServiceException;
+
+    boolean findDuplicatePhone(Integer countryCode,Integer operatorCode,Integer number) throws ServiceException;
 }

@@ -27,7 +27,7 @@ public class UpdatePhoneCommand  implements Command  {
             log.debug( ps.updatePhone(phones));
         } catch (ServiceException e) {
             log.error(e);
-            throw new ServiceException();
+            throw new ServiceException("Fail to update phone commentary should be less then 250");
         }
     }
 

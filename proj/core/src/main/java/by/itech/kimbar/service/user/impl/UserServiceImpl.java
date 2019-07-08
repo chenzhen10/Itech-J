@@ -8,15 +8,21 @@ import by.itech.kimbar.dao.user.UserDao;
 import by.itech.kimbar.entity.Gender;
 import by.itech.kimbar.entity.MaritalStatus;
 import by.itech.kimbar.entity.User;
-import by.itech.kimbar.service.user.UserService;
 import by.itech.kimbar.service.exception.ServiceException;
+import by.itech.kimbar.service.user.UserService;
 import by.itech.kimbar.service.validation.impl.ValidationImpl;
+import by.itech.kimbar.util.DirectoryCreator;
+import by.itech.kimbar.util.PathPropertyReader;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -28,12 +34,12 @@ public class UserServiceImpl implements UserService {
     public String getAllInJson() throws ServiceException {
         ObjectMapper om = new ObjectMapper();
         String res = null;
-            UserDao usrDao = provider.getUserDao();
-            try {
-                res = om.writeValueAsString(usrDao.getAllUser());
-            } catch (DaoException | IOException e) {
-                throw new ServiceException(e);
-            }
+        UserDao usrDao = provider.getUserDao();
+        try {
+            res = om.writeValueAsString(usrDao.getAllUser());
+        } catch (DaoException | IOException e) {
+            throw new ServiceException(e);
+        }
 
         return res;
     }
@@ -65,10 +71,11 @@ public class UserServiceImpl implements UserService {
                 ConnectionCloser.close(c, null, null);
             }
             return result;
-        }else {
+        } else {
             throw new ServiceException("Inputted data are incorrect");
         }
     }
+
     @Override
     public boolean deleteUser(Integer[] id) throws ServiceException {
         if (ValidationImpl.validateDelete(id)) {
@@ -92,7 +99,7 @@ public class UserServiceImpl implements UserService {
                 ConnectionCloser.close(c, null, null);
             }
             return result;
-        }else {
+        } else {
             throw new ServiceException("There is no data to delete");
         }
     }
@@ -109,6 +116,7 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+
     @Override
     public String getPaginationUsers(Integer start, Integer total) throws ServiceException {
         if (ValidationImpl.validatePagination(start, total)) {
@@ -123,15 +131,16 @@ public class UserServiceImpl implements UserService {
                 throw new ServiceException(e);
             }
             return result;
-        }else{
+        } else {
             throw new ServiceException("Data are incorrect");
         }
     }
-    // implement validation if user want to input incorrect data
+
+
     @Override
     public boolean createUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
                               MaritalStatus maritalStatus, String webSite, String email, String workplace,
-                              String country, String city, String street, String house, String numOfFlat, Integer index) throws ServiceException {
+                              String country, String city, String street, String house, String numOfFlat, Integer index, String photoPath, String img) throws ServiceException {
 
         if (ValidationImpl.validateCreateUserFields(name, surname, lastName, citizenship,
                 webSite, email, workplace, country, city, street, house, numOfFlat)) {
@@ -143,10 +152,12 @@ public class UserServiceImpl implements UserService {
                 c.setAutoCommit(false);
                 result = usrDao.createUser
                         (name, surname, lastName, date, gender, citizenship, maritalStatus
-                                , webSite, email, workplace, country, city, street, house, numOfFlat, index);
+                                , webSite, email, workplace, country, city, street, house, numOfFlat, index, photoPath);
                 c.commit();
+
+                createFolderWithUserPhoto(String.valueOf(extractNextUserId()), photoPath, img);
                 c.setAutoCommit(true);
-            } catch (DaoException | SQLException e) {
+            } catch (DaoException | SQLException | IOException e) {
                 try {
                     c.rollback();
                 } catch (SQLException e1) {
@@ -157,14 +168,15 @@ public class UserServiceImpl implements UserService {
                 ConnectionCloser.close(c, null, null);
             }
             return result;
-       }else {
+        } else {
             throw new ServiceException("Inputted data are incorrect");
-       }
+        }
     }
+
     @Override
-    public String findUserByParameter(String name, String surname, String lastName, Gender gender, Date date,
+    public String findUserByParameter(String name, String surname, String lastName, Gender gender, String year, String month, String day,
                                       MaritalStatus maritalStatus, String citizenship, String country, String city, String street,
-                                      String house, String numOfHouse, Integer index,Integer start, Integer total) throws ServiceException {
+                                      String house, String numOfHouse, Integer index, Integer start, Integer total) throws ServiceException {
 
         if (ValidationImpl.validateSearchFields(name, surname, lastName,
                 citizenship, country, city, street, house, numOfHouse)) {
@@ -175,7 +187,7 @@ public class UserServiceImpl implements UserService {
             String result = null;
             try {
                 String query = "SELECT * FROM client WHERE 1 = 1 ";
-                String countOfUsers = "SELECT COUNT(*) FROM client WHERE 1 = 1 ";
+
 
                 if (name != null && name.length() > 0) {
                     query += " AND name LIKE " + "'%" + name + "%'";
@@ -189,13 +201,19 @@ public class UserServiceImpl implements UserService {
                     query += " AND last_name LIKE " + "'%" + lastName + "%'";
                 }
                 if (gender != null) {
-                    query += " AND gender = "  + "'" + gender + "'" ;
+                    query += " AND gender = " + "'" + gender + "'";
                 }
-                if (maritalStatus != null ) {
+                if (maritalStatus != null) {
                     query += " AND marital_status = " + "'" + maritalStatus + "'";
                 }
-                if (date != null) {
-                    query += " AND date = '" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "'";
+                if (year != null && year.length() > 0) {
+                    query += " AND YEAR(date) = '" + year + "'";
+                }
+                if (month != null && month.length() > 0) {
+                    query += " AND MONTH(date) = '" + month + "'";
+                }
+                if (day != null && day.length() > 0) {
+                    query += " AND DAY(date) = '" + day + "'";
                 }
                 if (citizenship != null && citizenship.length() > 0) {
                     query += " AND citizenship LIKE " + "'%" + citizenship + "%'";
@@ -218,20 +236,20 @@ public class UserServiceImpl implements UserService {
                 if (index != null) {
                     query += " AND client.index LIKE " + "'%" + index + "%'";
                 }
-                users = ud.findUser(query + "ORDER BY surname LIMIT " +  start + "," + total );
+                users = ud.findUser(query + "ORDER BY surname LIMIT " + start + "," + total);
                 result = om.writeValueAsString(users);
             } catch (DaoException | IOException e) {
                 throw new ServiceException(e);
             }
             return result;
-        } else{
+        } else {
             throw new ServiceException("Inputted data are incorrect");
         }
     }
 
 
     @Override
-    public String countUserByParameter(String name, String surname, String lastName, Gender gender, Date date,
+    public String countUserByParameter(String name, String surname, String lastName, Gender gender, String year, String month, String day,
                                        MaritalStatus maritalStatus, String citizenship, String country, String city, String street,
                                        String house, String numOfHouse, Integer index) throws ServiceException {
 
@@ -257,13 +275,19 @@ public class UserServiceImpl implements UserService {
                     countOfUsers += " AND last_name LIKE " + "'%" + lastName + "%'";
                 }
                 if (gender != null) {
-                    countOfUsers += " AND gender = "  + "'" + gender + "'" ;
+                    countOfUsers += " AND gender = " + "'" + gender + "'";
                 }
-                if (maritalStatus != null ) {
+                if (maritalStatus != null) {
                     countOfUsers += " AND marital_status = " + "'" + maritalStatus + "'";
                 }
-                if (date != null) {
-                    countOfUsers += " AND date = '" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "'";
+                if (year != null && year.length() > 0) {
+                    countOfUsers += " AND YEAR(date) = '" + year + "'";
+                }
+                if (month != null && month.length() > 0) {
+                    countOfUsers += " AND MONTH(date) = '" + month + "'";
+                }
+                if (day != null && day.length() > 0) {
+                    countOfUsers += " AND DAY(date) = '" + day + "'";
                 }
                 if (citizenship != null && citizenship.length() > 0) {
                     countOfUsers += " AND citizenship LIKE " + "'%" + citizenship + "%'";
@@ -286,13 +310,15 @@ public class UserServiceImpl implements UserService {
                 if (index != null) {
                     countOfUsers += " AND client.index LIKE " + "'%" + index + "%'";
                 }
+
+                System.out.println(countOfUsers);
                 int res = ud.countOfFoundUsers(countOfUsers);
                 result = om.writeValueAsString(res);
             } catch (DaoException | IOException e) {
                 throw new ServiceException(e);
             }
             return result;
-        } else{
+        } else {
             throw new ServiceException("Inputted data are incorrect");
         }
     }
@@ -310,4 +336,35 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public int extractNextUserId() throws ServiceException {
+        UserDao usrDao = provider.getUserDao();
+        int result = 0;
+        try {
+            result = usrDao.getNextUserId();
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
+        return result;
+    }
+
+    private String createFolderWithUserPhoto(String usrId, String ext, String img) throws IOException {
+        String pathToPhoto = null;
+        if (ext != null && !ext.equals("null")) {
+            FileUtils.deleteDirectory(new File(PathPropertyReader.readPhotoPath() + File.separator + usrId));
+            DirectoryCreator.createPhotoSubFolderForUser(usrId);
+            String path = PathPropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + ext;
+
+            InputStream in = new ByteArrayInputStream(decodeImage(img));
+            BufferedImage bImageFromConvert = ImageIO.read(in);
+            ImageIO.write(bImageFromConvert, ext.replace(".",""), new File(path));
+            pathToPhoto = PathPropertyReader.readPhotoPath() + File.separator + usrId + File.separator + usrId + ext;
+            in.close();
+        }
+        return pathToPhoto;
+    }
+
+    private static byte[] decodeImage(String imageDataString) {
+        return Base64.decodeBase64(imageDataString);
+    }
 }

@@ -28,12 +28,14 @@ public class UserDaoImpl implements UserDao {
     private static final String GET_ALL_USERS = "SELECT * FROM client";
     private static final String CREATE_USER = "INSERT INTO client " +
             "(name, surname, last_name, date, gender, citizenship, marital_status, web_site, email, workplace, " +
-            "country, city, street, house, num_of_house,`index`) " +
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            "country, city, street, house, num_of_house,`index`,photo_path) " +
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     //pagination
     private static final String PAGINATION_USER = "SELECT * FROM client ORDER BY surname LIMIT  ? , ? ";
     private static final String USER_COUNT = "SELECT COUNT(*) FROM client";
+
+    private static final String NEXT_USER = "SELECT LAST_INSERT_ID();";
 
     private static final String DELETE_USER = "DELETE FROM client WHERE idclient in(?)";
     private static final String UPDATE_USER = "UPDATE  client SET name = ? ,surname = ? , last_name = ? , date = ? , " +
@@ -46,15 +48,19 @@ public class UserDaoImpl implements UserDao {
 
 
     @Override
-    public Integer countOfUser() throws DaoException {
+    public int countOfUser() throws DaoException {
         return getCount(USER_COUNT);
     }
 
     @Override
-    public Integer countOfFoundUsers(String query) throws DaoException {
+    public int countOfFoundUsers(String query) throws DaoException {
         return getCount(query);
     }
 
+    @Override
+    public int getNextUserId() throws DaoException {
+        return getCount(NEXT_USER);
+    }
 
 
 
@@ -85,45 +91,16 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> getAllUser() throws DaoException {
-        List<User> users = new ArrayList<>();
-        Connection c = ConnectionPool.getInstance().getConnection();
-        Statement st = null;
-        ResultSet rs = null;
-
-        try {
-            st = c.createStatement();
-            rs = st.executeQuery(GET_ALL_USERS);
-            while (rs.next()) {
-                users.add(create(rs));
-            }
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        } finally {
-            ConnectionCloser.close(c, rs, st);
-        }
-        return users;
+        return getUsers(GET_ALL_USERS);
     }
 
     @Override
     public List<User> findUser(String query) throws DaoException {
-        List<User> users = new ArrayList<>();
-        Connection c = ConnectionPool.getInstance().getConnection();
-        Statement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = c.createStatement();
-            rs = ps.executeQuery(query);
-
-            while (rs.next()) {
-                users.add(create(rs));
-            }
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        } finally {
-            ConnectionCloser.close(c, rs, ps);
-        }
-        return users;
+        return getUsers(query);
     }
+
+
+
 
 
 
@@ -131,7 +108,7 @@ public class UserDaoImpl implements UserDao {
     public boolean createUser(String name, String surname, String lastName, Date date, Gender gender, String citizenship,
                               MaritalStatus maritalStatus, String webSite, String email, String workplace,
                               String country, String city, String street, String house, String numOfFlat,
-                              Integer index) throws DaoException {
+                              Integer index,String photoPath) throws DaoException {
         Connection c = ConnectionPool.getInstance().getConnection();
         PreparedStatement st = null;
         int res = 0;
@@ -153,6 +130,7 @@ public class UserDaoImpl implements UserDao {
             st.setString(14, house);
             st.setString(15, numOfFlat);
             st.setObject(16, index);
+            st.setObject(17, photoPath);
 
             res = st.executeUpdate();
         } catch (SQLException e) {
@@ -176,6 +154,7 @@ public class UserDaoImpl implements UserDao {
                 ps.setInt(1, id[iterator]);
                 ps.addBatch();
                 FileUtils.deleteDirectory(new File(PathPropertyReader.readFilePath() + File.separator + id[iterator]));
+                FileUtils.deleteDirectory(new File(PathPropertyReader.readPhotoPath() + File.separator + id[iterator]));
                 iterator++;
             }
 
@@ -205,7 +184,6 @@ public class UserDaoImpl implements UserDao {
         PreparedStatement ps = null;
         int res = 0;
         try {
-
 
             ps = c.prepareStatement(UPDATE_USER);
             ps.setString(1, name);
@@ -302,6 +280,26 @@ public class UserDaoImpl implements UserDao {
             ConnectionCloser.close(c, rs, st);
         }
         return count;
+    }
+
+    private List<User> getUsers(String query) throws DaoException {
+        List<User> users = new ArrayList<>();
+        Connection c = ConnectionPool.getInstance().getConnection();
+        Statement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = c.createStatement();
+            rs = ps.executeQuery(query);
+
+            while (rs.next()) {
+                users.add(create(rs));
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        } finally {
+            ConnectionCloser.close(c, rs, ps);
+        }
+        return users;
     }
 
 }
