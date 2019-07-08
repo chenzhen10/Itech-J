@@ -84,25 +84,23 @@ document.forms.add.onsubmit = function (e) {
     if (isValidUserForm(name,surname,lastName,citizenship,country,city,email,index) &&  result && checkDate(date) && !validateDate(new Date(date))) {
 
         fetch('client/add/user',options).then(function (value) {
-            var hideAddUsr = document.querySelector('.addUsr');
-            hideAddUsr.style.display = 'none';
+            if (value.status === 500) {
+                return value.json();
+            }
+
+            hideAddUserForm();
             resetUserAddForm();
-
-
             refreshUserTable(0,5);
             showUserTable();
             resetUseAddFileElement();
 
-            if (value.status === 500) {
-                return value.json();
-            }
         }).then(function(res) {
             showError(res);
         }).catch(err => console.log(err));
     }else if (!result) {
         alert('You can upload only image');
     }else if(!checkDate(date)) {
-        alert('You should input full date');
+        alert('You should correct date');
     }else if (validateDate(new Date(date))) {
         alert("Your birthday can't be in future please choose correct date");
     }else {
@@ -113,6 +111,7 @@ document.forms.add.onsubmit = function (e) {
 };
 
 backBtn.addEventListener("click",function () {
+    resetUserAddForm();
     showUserTable();
     hideAddUserForm();
 });
@@ -199,7 +198,6 @@ function editUser() {
 
 
 table.addEventListener("mouseover",function (evt) {
-
     var rows = document.querySelectorAll('.usersRow');
     var td = document.querySelectorAll('.fullName');
     for (var i = 0; i < rows.length ; i++) {
@@ -215,9 +213,7 @@ table.addEventListener("mouseover",function (evt) {
         };
         t.onclick = createClickHandler(currentRow);
     }
-
 });
-
 
 bac2Btn.addEventListener("click",function (evt) {
     showUserTable();
@@ -282,18 +278,16 @@ userApplyButton.addEventListener("click",function (evt) {
     };
 
     if (isValidUserForm(name,surname,lastName,citizenship,country,city,email, index) && result && checkDate(date)  && !validateDate(new Date(date))) {
-
         hideEditUserForm();
+
         fetch('client/edit/user',options).then(function (value) {
             if (value.status === 500) {
                 return value.json();
             }
         }).then(function(res) {
-            showError(res);
+                showError(res);
         }).then(function (value) {
             if(typeof pickedPhone !== 'undefined' && pickedPhone !== ''){
-
-
                 indexOfUpdatedPhone.forEach(function (value,index) {
                     savePhoneUpdate(value);
                 })
@@ -301,18 +295,16 @@ userApplyButton.addEventListener("click",function (evt) {
             }
         }).then(function (value) {
             if(typeof pickedAttachment !== 'undefined' && pickedAttachment !== ''){
-
-
                 indexOfUpdatedAttachment.forEach(function (value,index) {
                     saveAttachmentUpdate(value);
                 })
                 sendUpdatedAttachment();
             }
         }).then(function (value) {
+
             refreshUserTable(0,5);
             hideAllTables();
             showUserTable();
-
 
             resetUserEditFileElement();
 
@@ -327,7 +319,7 @@ userApplyButton.addEventListener("click",function (evt) {
     }else if (!result) {
         alert('You can upload only image');
     }else if(!checkDate(date)) {
-        alert('You should input full date');
+        alert('You should input correct date');
     }else if (validateDate(new Date(date))) {
         alert("Your birthday can't be in future please choose correct date");
     }else {

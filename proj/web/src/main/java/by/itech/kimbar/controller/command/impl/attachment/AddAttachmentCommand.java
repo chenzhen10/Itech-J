@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddAttachmentCommand implements Command {
+
+    private static final int MAX_FILE_SIZE = 1024 * 1024 * 15;
     private static final Logger log = Logger.getLogger(AddAttachmentCommand.class);
 
     static {
@@ -54,14 +56,14 @@ public class AddAttachmentCommand implements Command {
                 path = fileList.get(2);
             }
 
-            log.debug("Parameters : " + name + comment +  userId + path );
-            log.debug( as.attachFile(name, comment, userId, path));
+            log.debug("Parameters : " + name + comment + userId + path);
+            log.debug(as.attachFile(name, comment, userId, path));
         } catch (ServiceException e) {
             log.error(e);
             throw new ServiceException("Commentary was too long it should be less then 250");
         } catch (Exception e) {
             log.error(e);
-            throw new ServiceException();
+            throw new ServiceException("File shouldn't exceed 10MB");
         }
     }
 
@@ -78,8 +80,11 @@ public class AddAttachmentCommand implements Command {
         String fileName = null;
         String[] fileExtension;
         if (ServletFileUpload.isMultipartContent(req)) {
+            ServletFileUpload sfu = new ServletFileUpload(new DiskFileItemFactory());
+
+
             //1 is filename 2 is commentary 3 is userID
-            List<FileItem> multi = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(req);
+            List<FileItem> multi = sfu.parseRequest(req);
             int maxLength = multi.size() - 1;
             //with commentary / without
             if (maxLength == 3) {
@@ -90,6 +95,10 @@ public class AddAttachmentCommand implements Command {
             }
 
             for (FileItem item : multi) {
+
+                if (item.getSize() > MAX_FILE_SIZE) {
+                    throw new Exception();
+                }
                 // false  represents an uploaded file
                 if (!item.isFormField()) {
                     fileName = item.getName();

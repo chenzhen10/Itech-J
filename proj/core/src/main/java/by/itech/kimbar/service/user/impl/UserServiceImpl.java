@@ -310,8 +310,6 @@ public class UserServiceImpl implements UserService {
                 if (index != null) {
                     countOfUsers += " AND client.index LIKE " + "'%" + index + "%'";
                 }
-
-                System.out.println(countOfUsers);
                 int res = ud.countOfFoundUsers(countOfUsers);
                 result = om.writeValueAsString(res);
             } catch (DaoException | IOException e) {

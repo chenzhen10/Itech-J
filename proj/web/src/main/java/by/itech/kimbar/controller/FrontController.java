@@ -27,7 +27,6 @@ public class FrontController extends HttpServlet {
 
     }
 
-
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         CommandProvider cm = CommandProvider.getInstance();
@@ -70,7 +69,6 @@ public class FrontController extends HttpServlet {
 
         String param = request.getPathInfo().replaceFirst("/", "");
 
-
         if (param.length() != 0) {
             Command c = cm.getCommand(param);
             try {
@@ -102,6 +100,3 @@ public class FrontController extends HttpServlet {
     }
 
 }
-
-
-

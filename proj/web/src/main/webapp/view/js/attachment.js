@@ -9,6 +9,8 @@ var pickedAttachment ;
 var attachmentId;
 var attachmentIdAccumulator = [];
 
+var attachmentsBack = document.querySelector(".backAttachment");
+
 var cancelBtn = document.querySelector('.cancelAttachment');
 var confirmBtn = document.querySelector('.confirmAttachment');
 
@@ -46,33 +48,31 @@ attach.addEventListener("click",function (ev) {
             body: data
         };
 
-
         fetch('client/add/attachment',options).then(function(value) {
-            hideAttachmentForm();
-
-            resetAttachmentAddForm();
-
-            showAllTablesExceptUser();
-            refreshAllTableByUserId(userId);
-
-            showEditUserForm();
-
             if (value.status === 500) {
                 return value.json();
             }
+
+            hideAttachmentForm();
+            resetAttachmentAddForm();
+            showAllTablesExceptUser();
+            refreshAllTableByUserId(userId);
+            showEditUserForm();
+
         }).then(function(res) {
             showError(res);
         }).catch(err => console.log(err));
     }else if(!isValidAttachment(fileName)){
-        alert('Your name should be less then 20 and ot be empty');
+        alert('Your name should be less then 20 and not be empty');
     }else{
         alert("You should choose 1 file and name should be not empty");
     }
 
 });
 
-var attachmentsBack = document.querySelector(".backAttachment");
+
 attachmentsBack.addEventListener("click",function (evt) {
+    resetAttachmentAddForm();
     refreshUserTable(0,5);
     showAllTablesExceptUser();
     hideAttachmentForm();
