@@ -33,41 +33,52 @@ attach.addEventListener("click",function (ev) {
     var fileName = document.querySelector('#fName');
     var comment = document.querySelector('#comment');
 
-    if(input.files.length !== 0 && isValidAttachment(fileName)) {
+    if (input.files[0].size < 1024 * 1024 * 15) {
+        if(input.files.length !== 0 && isValidAttachment(fileName)) {
 
         var data = new FormData();
 
         data.append('file', input.files[0]);
         data.append(fileName.value, fileName.value);
         data.append(comment.value, comment.value);
-        data.append(userId,  userId);
+        data.append(userId, userId);
 
+            var options = {
+                method: 'POST',
+                body: data
+            };
 
-        var options = {
-            method: 'POST',
-            body: data
-        };
+            fetch('client/add/attachment', options).then(function (value) {
+                if (value.status === 500) {
+                    return value.json();
+                }
 
-        fetch('client/add/attachment',options).then(function(value) {
-            if (value.status === 500) {
-                return value.json();
-            }
+                hideAttachmentForm();
+                resetAttachmentAddForm();
+                showAllTablesExceptUser();
+                refreshAllTableByUserId(userId);
+                showEditUserForm();
 
-            hideAttachmentForm();
-            resetAttachmentAddForm();
-            showAllTablesExceptUser();
-            refreshAllTableByUserId(userId);
-            showEditUserForm();
-
-        }).then(function(res) {
-            showError(res);
-        }).catch(err => console.log(err));
-    }else if(!isValidAttachment(fileName)){
-        alert('Your name should be less then 20 and not be empty');
-    }else{
-        alert("You should choose 1 file and name should be not empty");
+            }).then(function (res) {
+                showError(res);
+            }).catch(err => console.log(err));
+        } else if (!isValidAttachment(fileName)) {
+            alert('Your name should be less then 20 and not be empty');
+        } else {
+            alert("You should choose 1 file and name should be not empty");
+        }
+    }else {
+        var errorDiv =  document.querySelector('#errorMsg');
+        errorDiv.innerHTML = '';
+        var errorMsg = document.createElement('span');
+        errorMsg.style.fontSize = '15';
+        errorMsg.style.color = 'red';
+        errorMsg.innerHTML = 'File shouldn\'t exceed 15MB';
+        document.querySelector('#errorMsg').appendChild(errorMsg);
+        setTimeout(function () {
+            errorDiv.innerHTML = ''
+        }, 6000);
     }
-
 });
 
 

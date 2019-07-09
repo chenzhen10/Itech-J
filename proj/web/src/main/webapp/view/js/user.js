@@ -301,7 +301,6 @@ userApplyButton.addEventListener("click",function (evt) {
                 sendUpdatedAttachment();
             }
         }).then(function (value) {
-
             refreshUserTable(0,5);
             hideAllTables();
             showUserTable();

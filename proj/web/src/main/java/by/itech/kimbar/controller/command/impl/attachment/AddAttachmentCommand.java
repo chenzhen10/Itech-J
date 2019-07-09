@@ -63,7 +63,7 @@ public class AddAttachmentCommand implements Command {
             throw new ServiceException("Commentary was too long it should be less then 250");
         } catch (Exception e) {
             log.error(e);
-            throw new ServiceException("File shouldn't exceed 10MB");
+            throw new ServiceException("File shouldn't exceed 15MB");
         }
     }
 
@@ -81,7 +81,6 @@ public class AddAttachmentCommand implements Command {
         String[] fileExtension;
         if (ServletFileUpload.isMultipartContent(req)) {
             ServletFileUpload sfu = new ServletFileUpload(new DiskFileItemFactory());
-
 
             //1 is filename 2 is commentary 3 is userID
             List<FileItem> multi = sfu.parseRequest(req);
